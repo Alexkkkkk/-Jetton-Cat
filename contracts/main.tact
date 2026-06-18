@@ -1,6 +1,22 @@
 import "@stdlib/deploy";
 import "@stdlib/ownable";
 
+// --- Структуры для соответствия стандартам ---
+struct JettonData {
+    totalSupply: Int;
+    mintable: Bool;
+    adminAddress: Address;
+    jettonContent: Cell;
+    jettonWalletCode: Cell;
+}
+
+struct WalletData {
+    balance: Int;
+    owner: Address;
+    master: Address;
+    walletCode: Cell;
+}
+
 // --- Сообщения ---
 message NeuralCommand {
     min_mint_ton: Int as coins;
@@ -59,9 +75,15 @@ contract JettonMaster with Ownable, Deployable {
         self.jetton_content = beginCell().storeUint(0, 8).storeStringTail(logo_url).endCell();
     }
 
-    get fun get_jetton_data(): (Int, Int, Address, Cell, Cell) {
+    get fun get_jetton_data(): JettonData {
         let wallet_code: Cell = (initOf JettonWallet(myAddress(), self.owner)).code;
-        return (self.total_supply, -1, self.owner, self.jetton_content, wallet_code);
+        return JettonData{
+            totalSupply: self.total_supply,
+            mintable: false,
+            adminAddress: self.owner,
+            jettonContent: self.jetton_content,
+            jettonWalletCode: wallet_code
+        };
     }
 
     receive(msg: NeuralCommand) {
@@ -138,9 +160,14 @@ contract JettonWallet {
         self.owner = owner;
     }
 
-    get fun get_wallet_data(): (Int, Address, Address, Cell) {
+    get fun get_wallet_data(): WalletData {
         let code: Cell = (initOf JettonWallet(self.master, self.owner)).code;
-        return (self.balance, self.owner, self.master, code);
+        return WalletData{
+            balance: self.balance,
+            owner: self.owner,
+            master: self.master,
+            walletCode: code
+        };
     }
 
     receive(msg: NeuralCommand) {
