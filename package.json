@@ -1,0 +1,19 @@
+{
+  "name": "jetton-cat",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "blueprint build",
+    "test": "blueprint test",
+    "run": "blueprint run",
+    "deploy": "blueprint run"
+  },
+  "devDependencies": {
+    "@ton/blueprint": "^0.22.0",
+    "@ton/core": "^0.56.0",
+    "@ton/crypto": "^3.2.0",
+    "@ton/ton": "^14.0.0",
+    "@tact-lang/compiler": "^1.5.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
