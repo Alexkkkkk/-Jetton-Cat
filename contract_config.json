@@ -15,6 +15,13 @@
     "learning_rate": 0.05,
     "entropy_threshold": 1000
   },
+  "ai_adaptive_strategy": {
+    "emergency_threshold": 100,
+    "warning_threshold": 300,
+    "optimization_mode_enabled": true,
+    "auto_scaling_min_mint": true,
+    "neural_cooldown_ms": 300000
+  },
   "deployment": {
     "logo_url": "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/logo.png",
     "metadata_url": "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json",
