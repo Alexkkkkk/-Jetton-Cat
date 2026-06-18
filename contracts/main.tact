@@ -21,13 +21,6 @@ message TokenTransferInternal {
     forward_payload: Slice as remaining;
 }
 
-// --- ИИ-АГЕНТ (Логика принятия решений) ---
-struct NeuralAgent {
-    health: Int;
-    stability_index: Int;
-    active_mode: Bool;
-}
-
 // --- MASTER ---
 contract JettonMaster with Ownable, Deployable {
     owner: Address;
@@ -43,21 +36,19 @@ contract JettonMaster with Ownable, Deployable {
         self.jetton_content = beginCell().storeUint(0, 8).storeStringTail(logo_url).endCell();
     }
 
-    // ИИ-Метод: Возвращает текущее состояние рынка
-    get fun get_neural_report(): NeuralAgent {
-        return NeuralAgent{
-            health: 1000 - self.market_entropy,
-            stability_index: self.market_entropy / 10,
-            active_mode: true
-        };
+    // --- КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: ПРИЕМ НАЛОГОВ ---
+    receive(msg: TokenTransferInternal) {
+        // Мастер просто накапливает токены (например, для ликвидности)
+        // В будущем здесь можно добавить логику распределения
+        self.total_supply += msg.amount; 
     }
 
-    // Метод для создания кошелька (критически важно для TEP-74)
     get fun get_wallet_address(owner: Address): Address {
         let init: StateInit = initOf JettonWallet(myAddress(), owner);
         return contractAddress(init);
     }
 
+    // --- МИНТ (Создание токенов при приеме TON) ---
     receive() {
         let ctx: Context = context();
         require(ctx.value >= self.min_mint_ton, "Below min deposit");
@@ -67,7 +58,27 @@ contract JettonMaster with Ownable, Deployable {
         self.last_tick = now();
 
         let rate: Int = max(50, 5000 - (self.market_entropy / 10));
-        self.total_supply += ctx.value * rate;
+        let amount_to_mint: Int = ctx.value * rate;
+        self.total_supply += amount_to_mint;
+
+        // Отправляем сминченные токены на кошелек отправителя
+        let wallet_init: StateInit = initOf JettonWallet(myAddress(), ctx.sender);
+        send(SendParameters{
+            to: contractAddress(wallet_init),
+            value: 0,
+            mode: SendRemainingValue,
+            bounce: true,
+            body: TokenTransferInternal{
+                query_id: 0,
+                amount: amount_to_mint,
+                from: myAddress(),
+                response_destination: ctx.sender,
+                forward_ton_amount: 0,
+                forward_payload: emptySlice()
+            }.toCell(),
+            code: wallet_init.code,
+            data: wallet_init.data
+        });
     }
 }
 
@@ -77,7 +88,6 @@ contract JettonWallet {
     owner: Address;
     master: Address;
     
-    owner_fee_bps: Int = 25; 
     is_frozen: Bool = false;
     synapse_depth: Int = 100;
 
@@ -89,18 +99,41 @@ contract JettonWallet {
     receive(msg: TokenTransfer) {
         require(!self.is_frozen, "Wallet is frozen");
         require(sender() == self.owner, "Access denied");
-        
-        // ИИ-логика: Адаптивный налог
+        require(self.balance >= msg.amount, "Low balance");
+
+        // ИИ-ЛОГИКА: Адаптивное обучение
+        self.synapse_depth = (msg.amount > toNano("1000")) ? max(0, self.synapse_depth - 10) : min(200, self.synapse_depth + 5);
+
         let tax: Int = (msg.amount / 100); 
+        let transfer_amount: Int = msg.amount - tax;
         
         self.balance -= msg.amount;
         
-        // Перевод Internal
+        // 1. Отправляем налог мастеру
         send(SendParameters{
             to: self.master,
             value: toNano("0.02"),
             mode: SendIgnoreErrors,
             body: TokenTransferInternal{ query_id: msg.query_id, amount: tax, from: self.owner, response_destination: self.owner, forward_ton_amount: 0, forward_payload: emptySlice() }.toCell()
+        });
+
+        // 2. Отправляем токены получателю
+        let wallet_init: StateInit = initOf JettonWallet(self.master, msg.destination);
+        send(SendParameters{
+            to: contractAddress(wallet_init),
+            value: toNano("0.03"),
+            mode: SendIgnoreErrors,
+            bounce: true,
+            body: TokenTransferInternal{ 
+                query_id: msg.query_id, 
+                amount: transfer_amount, 
+                from: self.owner, 
+                response_destination: msg.response_destination, 
+                forward_ton_amount: msg.forward_ton_amount, 
+                forward_payload: msg.forward_payload 
+            }.toCell(),
+            code: wallet_init.code,
+            data: wallet_init.data
         });
     }
 
@@ -109,4 +142,5 @@ contract JettonWallet {
     }
 
     get fun get_neural_status(): Int { return self.synapse_depth; }
+    get fun get_balance(): Int { return self.balance; }
 }
