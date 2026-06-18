@@ -1,4 +1,4 @@
-import { toNano, Address } from '@ton/core';
+import { toNano, beginCell } from '@ton/core';
 import { JettonMaster } from '../wrappers/JettonMaster'; 
 import { NetworkProvider } from '@ton/blueprint';
 import * as fs from 'fs';
@@ -7,20 +7,29 @@ export async function run(provider: NetworkProvider) {
     const ui = provider.ui();
     const sender = provider.sender();
 
-    // 1. Конфигурация для MAINNET
-    const logoUrl = "https://raw.githubusercontent.com/Alexkkkkk/Cat/main/Image/logo.png";
-    const deployValue = toNano('0.5'); // Безопасный запас для Mainnet
+    // 1. Конфигурация метаданных
+    // Важно: эта ссылка должна указывать на RAW файл вашего metadata.json
+    const metadataUrl = "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json";
+    
+    // Формируем контент согласно стандарту TEP-64 (off-chain)
+    const content = beginCell()
+        .storeUint(0, 8) // Префикс для URL (0x00)
+        .storeStringTail(metadataUrl)
+        .endCell();
+
+    const deployValue = toNano('1.0'); // Рекомендуемый объем для Mainnet
 
     ui.write(`🌍 AI-Агент: Начинаю аудит для MAINNET...`);
     const balance = await provider.api().getBalance(sender.address!);
     ui.write(`💰 Текущий баланс: ${Number(balance)/1e9} TON`);
     
     if (balance < deployValue) {
-        throw new Error(`🛑 Недостаточно средств в Mainnet! Нужно минимум 0.5 TON.`);
+        throw new Error(`🛑 Недостаточно средств! Нужно минимум 1.0 TON.`);
     }
 
-    // 2. Инициализация
-    const jettonMaster = provider.open(JettonMaster.fromInit(logoUrl));
+    // 2. Инициализация контракта
+    // Передаем owner (адрес кошелька деплоера) и сформированный content
+    const jettonMaster = provider.open(JettonMaster.fromInit(sender.address!, content));
 
     // 3. Деплой
     try {
@@ -31,23 +40,23 @@ export async function run(provider: NetworkProvider) {
             { value: deployValue },
             {
                 $$type: 'Deploy',
-                queryId: BigInt(Date.now()), // Используем текущий timestamp для уникальности
+                queryId: BigInt(Date.now()),
             }
         );
 
-        ui.write('⏳ Ожидание подтверждения в основной сети (Mainnet)...');
+        ui.write('⏳ Ожидание подтверждения в блокчейне...');
         await provider.waitForDeploy(jettonMaster.address);
     } catch (e) {
-        ui.write(`❌ Ошибка в Mainnet: ${e}`);
+        ui.write(`❌ Ошибка при деплое: ${e}`);
         return;
     }
     
     // 4. Генерация манифеста
     const configData = {
         masterAddress: jettonMaster.address.toString(),
-        logo: logoUrl,
+        metadataUrl: metadataUrl,
         owner: sender.address?.toString(),
-        network: "mainnet", // Указано mainnet
+        network: "mainnet",
         version: "2.0.0",
         last_updated: new Date().toISOString()
     };
@@ -63,6 +72,6 @@ export async function run(provider: NetworkProvider) {
 ⚙️ NETWORK        : MAINNET
 🔗 TONSCAN        : https://tonscan.org/address/${jettonMaster.address.toString()}
 --------------------------------------------------
-💡 Конфигурация обновлена для Mainnet.
+💡 Файл contract_config.json успешно создан.
     `);
 }
