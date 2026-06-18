@@ -1,10 +1,32 @@
-{
-  "botUsername": "@CatPlushie_bot",
-  "masterAddress": "none",
-  "tokenName": "Plushie Cat",
-  "tokenTicker": "PLSH",
-  "maxSupply": "100000000000",
-  "decimals": 9,
-  "logoUrl": "https://raw.githubusercontent.com/Alexkkkkk/Cat/main/Image/logo.png",
-  "webAppUrl": "https://catplushie.bothost.tech"
+import { toNano, beginCell } from '@ton/core';
+import { JettonMaster } from '../wrappers/JettonMaster'; 
+import { NetworkProvider } from '@ton/blueprint';
+import * as fs from 'fs';
+
+export async function run(provider: NetworkProvider) {
+    const sender = provider.sender();
+    const metadataUrl = "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json";
+    
+    const content = beginCell()
+        .storeUint(0, 8)
+        .storeStringTail(metadataUrl)
+        .endCell();
+
+    const jettonMaster = provider.open(JettonMaster.fromInit(sender.address!, content));
+
+    await jettonMaster.send(sender, { value: toNano('1.0') }, {
+        $$type: 'Deploy',
+        queryId: BigInt(Date.now()),
+    });
+
+    await provider.waitForDeploy(jettonMaster.address);
+
+    const configData = {
+        masterAddress: jettonMaster.address.toString(),
+        network: provider.network(),
+        last_updated: new Date().toISOString()
+    };
+
+    fs.writeFileSync('contract_config.json', JSON.stringify(configData, null, 4));
+    console.log(`✅ Контракт задеплоен: ${jettonMaster.address.toString()}`);
 }
