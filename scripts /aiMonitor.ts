@@ -2,6 +2,10 @@ import { TonClient, Address, fromNano, beginCell, internal, WalletContractV4 } f
 import { mnemonicToPrivateKey } from "@ton/crypto";
 import "dotenv/config";
 import axios from "axios";
+import * as fs from 'fs';
+
+// Загружаем конфиг
+const config = JSON.parse(fs.readFileSync('./contract_config.json', 'utf-8'));
 
 const AI_AGENT = {
     log: (msg: string) => console.log(`[${new Date().toISOString()}] [AI-AGENT-MASTER]: ${msg}`),
@@ -14,37 +18,32 @@ const AI_AGENT = {
                 text: `🤖 *AI-System Pulse*: ${msg}`, 
                 parse_mode: 'Markdown' 
             });
-        } catch (e) { console.error("Ошибка Telegram:", e); }
+        } catch (e) { AI_AGENT.log(`Ошибка Telegram: ${e}`); }
     },
 
-    // Функция подписи и отправки транзакции управления
     updateSmartConfig: async (client: TonClient, master: Address, newMinMint: bigint, isFrozen: boolean) => {
-        const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC!.split(" "));
+        if (!process.env.OWNER_MNEMONIC) throw new Error("OWNER_MNEMONIC не найден в .env!");
+        
+        const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC.split(" "));
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
-        // Формируем тело сообщения SetConfig (0x6e656972 - это CRC32 вашего метода)
+        // Используем ID метода 0x6e656972 для SetConfig
         const body = beginCell()
             .storeUint(0x6e656972, 32) 
             .storeCoins(newMinMint)
             .storeBit(isFrozen)
             .endCell();
         
-        AI_AGENT.log(`⚙️ Подписываю транзакцию изменения конфига...`);
+        AI_AGENT.log(`⚙️ Подписываю транзакцию: MinMint=${newMinMint}, Frozen=${isFrozen}`);
         
         const seqno = await walletContract.getSeqno();
         await walletContract.sendTransfer({
             seqno,
             secretKey: keyPair.secretKey,
-            messages: [
-                internal({
-                    to: master,
-                    value: "0.05", // Газ для выполнения транзакции
-                    body: body,
-                })
-            ]
+            messages: [ internal({ to: master, value: "0.05", body: body }) ]
         });
-        AI_AGENT.log(`✅ Транзакция отправлена в блокчейн.`);
+        AI_AGENT.log(`✅ Транзакция успешно отправлена.`);
     }
 };
 
@@ -56,48 +55,46 @@ async function run() {
     const master = Address.parse(process.env.MASTER_ADDRESS!);
 
     try {
-        // 1. ПРОВЕРКА ЛИКВИДНОСТИ
+        // 1. АУДИТ ЛИКВИДНОСТИ
         const balance = await client.getBalance(master);
         const balanceTON = parseFloat(fromNano(balance));
         
-        if (balanceTON < 5.0) {
+        if (balanceTON < config.monitoring.liquidity_alert_threshold) {
             await AI_AGENT.notifyTelegram(`⚠️ *НИЗКИЙ БАЛАНС:* ${balanceTON.toFixed(2)} TON.`);
         }
 
-        // 2. АНАЛИЗ НЕЙРО-ОТЧЕТА
+        // 2. НЕЙРО-АНАЛИЗ
         const { stack } = await client.runMethod(master, "get_neural_report");
         const health = stack.readNumber();
         const stability = stack.readNumber();
 
         AI_AGENT.log(`📊 Статус: Здоровье=${health}, Стабильность=${stability}`);
 
-        // 3. АВТОНОМНЫЕ РЕАКЦИИ
+        // 3. АВТОНОМНЫЕ РЕАКЦИИ (с использованием конфига)
         if (health < 100) {
-            AI_AGENT.log("💀 Экстренная заморозка контракта!");
-            await AI_AGENT.updateSmartConfig(client, master, 1_000_000_000n, true);
-            await AI_AGENT.notifyTelegram(`🛑 *ЗАМОРОЗКА:* Здоровье ${health}. Агент принудительно остановил контракт.`);
+            AI_AGENT.log("💀 Критическая фаза! Заморозка.");
+            await AI_AGENT.updateSmartConfig(client, master, BigInt(config.blockchain_settings.min_mint_ton) * 10n, true);
+            await AI_AGENT.notifyTelegram(`🛑 *ЗАМОРОЗКА:* Здоровье ${health}.`);
         } 
         else if (health < 300) {
-            AI_AGENT.log("🚨 Критический уровень! Активирую защитный режим.");
-            await AI_AGENT.updateSmartConfig(client, master, 500_000_000n, false);
-            await AI_AGENT.notifyTelegram(`🚨 *ПАДЕНИЕ:* Здоровье ${health}. Параметры обновлены ИИ.`);
+            AI_AGENT.log("🚨 Активация защитного протокола.");
+            await AI_AGENT.updateSmartConfig(client, master, BigInt(config.blockchain_settings.min_mint_ton), false);
+            await AI_AGENT.notifyTelegram(`🚨 *ПАДЕНИЕ:* Здоровье ${health}. Параметры оптимизированы.`);
         }
-        else if (health > 800) {
-            AI_AGENT.log("📈 Рынок перегрет. Нормализация.");
-            await AI_AGENT.notifyTelegram(`✅ *Рынок стабилен:* Здоровье ${health}.`);
+        else if (health > config.ai_neural_parameters.entropy_threshold) {
+            AI_AGENT.log("📈 Рынок перегрет. Режим стабилизации.");
+            await AI_AGENT.notifyTelegram(`✅ *Стабильность:* Здоровье ${health}.`);
         }
 
     } catch (e: any) {
-        AI_AGENT.log(`Ошибка: ${e.message}`);
-        await AI_AGENT.notifyTelegram(`❌ *Критическая ошибка монитора:* ${e.message}`);
+        AI_AGENT.log(`Ошибка цикла: ${e.message}`);
     }
 }
 
-// Запуск с защитой (рекурсия)
 const cycle = async () => {
     await run();
-    setTimeout(cycle, 60000); // 1 минута между проверками
+    setTimeout(cycle, config.monitoring.check_interval_ms);
 };
 
-AI_AGENT.log("Автономный AI-монитор запущен.");
+AI_AGENT.log("Автономный AI-агент активирован.");
 cycle();
