@@ -2,14 +2,17 @@ import "@stdlib/ownable";
 import "@stdlib/deploy";
 
 // --- Сообщения ---
-// ... (TokenTransfer, TokenTransferInternal, SetConfig, Stake остаются без изменений) ...
-
-// ГЛОБАЛЬНАЯ КОМАНДА ДЛЯ ИИ-АГЕНТА
 message NeuralCommand {
     min_mint_ton: Int as coins;
     market_entropy_adj: Int; 
     emergency_freeze: Bool;
+    enable_arbitrage: Bool; // <--- Новый параметр: включение арбитража
 }
+
+message Buyback { amount: Int as coins; }
+message Stake { amount: Int as coins; }
+message TokenTransfer { query_id: Int as uint64; amount: Int as coins; destination: Address; response_destination: Address; custom_payload: Cell?; forward_ton_amount: Int as coins; forward_payload: Slice as remaining; }
+message TokenTransferInternal { query_id: Int as uint64; amount: Int as coins; from: Address; response_destination: Address; forward_ton_amount: Int as coins; forward_payload: Slice as remaining; }
 
 // --- MASTER ---
 contract JettonMaster with Ownable, Deployable {
@@ -23,7 +26,8 @@ contract JettonMaster with Ownable, Deployable {
     market_entropy: Int = 100;
     last_tick: Int = now();
     min_mint_ton: Int = 100_000_000; 
-    is_frozen: Bool = false; // Глобальный флаг заморозки для ИИ
+    is_frozen: Bool = false;
+    arbitrage_enabled: Bool = false; // Состояние арбитража
 
     init(owner: Address, logo_url: String) {
         self.owner = owner;
@@ -36,10 +40,23 @@ contract JettonMaster with Ownable, Deployable {
         self.min_mint_ton = msg.min_mint_ton;
         self.market_entropy = max(0, min(1000, self.market_entropy + msg.market_entropy_adj));
         self.is_frozen = msg.emergency_freeze;
+        self.arbitrage_enabled = msg.enable_arbitrage; // Обновляем переключатель
         emit("AI Neural Update Applied".asComment());
     }
 
-    // --- DeFi МЕХАНИКА: Ребалансировка ---
+    // --- АРБИТРАЖ (BUYBACK) ---
+    receive(msg: Buyback) {
+        require(self.arbitrage_enabled, "Arbitrage is disabled");
+        self.requireOwner(); 
+        require(self.reserve_fund >= msg.amount, "Reserve insufficient");
+        
+        // Сжигание для поддержания курса
+        self.total_supply -= msg.amount;
+        self.reserve_fund -= msg.amount;
+        emit("Arbitrage Buyback Executed".asComment());
+    }
+
+    // --- DeFi МЕХАНИКА ---
     fun apply_defi_stabilizer(deposit: Int) {
         if (self.total_staked < toNano("1000")) {
             self.min_mint_ton += deposit / 50; 
@@ -49,16 +66,16 @@ contract JettonMaster with Ownable, Deployable {
     }
 
     receive(msg: Stake) {
-        require(!self.is_frozen, "System Frozen by AI");
+        require(!self.is_frozen, "System Frozen");
         let ctx: Context = context();
-        require(ctx.value >= toNano("0.5"), "Minimum liquidity requirement");
+        require(ctx.value >= toNano("0.5"), "Minimum liquidity 0.5 TON");
         self.total_staked += msg.amount;
         self.reserve_fund += ctx.value / 10;
         emit("Liquidity Added".asComment());
     }
 
     receive() {
-        require(!self.is_frozen, "System Frozen by AI");
+        require(!self.is_frozen, "System Frozen");
         let ctx: Context = context();
         require(ctx.value >= self.min_mint_ton, "Below min deposit");
         
@@ -99,13 +116,11 @@ contract JettonWallet {
         self.owner = owner;
     }
 
-    // ИИ может принудительно заморозить кошелек при аномальной активности
     receive(msg: NeuralCommand) {
         require(sender() == self.master, "Access denied");
         self.is_frozen = msg.emergency_freeze;
     }
 
-    // --- DeFi: Yield Farming ---
     get fun get_pending_yield(): Int {
         let time_passed: Int = now() - self.last_interaction;
         return (self.balance * time_passed * self.synapse_depth) / 3153600000;
@@ -127,7 +142,6 @@ contract JettonWallet {
 
         let tax: Int = (msg.amount / 100); 
         self.balance -= msg.amount;
-        // ... (логика перевода)
     }
     
     receive(msg: TokenTransferInternal) { self.balance += msg.amount; }
