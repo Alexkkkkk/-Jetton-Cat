@@ -1,32 +1,28 @@
-import { toNano, beginCell } from '@ton/core';
-import { JettonMaster } from '../wrappers/JettonMaster'; 
-import { NetworkProvider } from '@ton/blueprint';
-import * as fs from 'fs';
-
-export async function run(provider: NetworkProvider) {
-    const sender = provider.sender();
-    const metadataUrl = "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json";
-    
-    const content = beginCell()
-        .storeUint(0, 8)
-        .storeStringTail(metadataUrl)
-        .endCell();
-
-    const jettonMaster = provider.open(JettonMaster.fromInit(sender.address!, content));
-
-    await jettonMaster.send(sender, { value: toNano('1.0') }, {
-        $$type: 'Deploy',
-        queryId: BigInt(Date.now()),
-    });
-
-    await provider.waitForDeploy(jettonMaster.address);
-
-    const configData = {
-        masterAddress: jettonMaster.address.toString(),
-        network: provider.network(),
-        last_updated: new Date().toISOString()
-    };
-
-    fs.writeFileSync('contract_config.json', JSON.stringify(configData, null, 4));
-    console.log(`✅ Контракт задеплоен: ${jettonMaster.address.toString()}`);
+{
+  "project_info": {
+    "name": "NeuroJetton",
+    "version": "1.0.0-NEURAL",
+    "description": "Adaptive autonomous jetton with AI-feedback loop"
+  },
+  "blockchain_settings": {
+    "workchain": 0,
+    "min_mint_ton": 100000000,
+    "owner_fee_bps": 25
+  },
+  "ai_neural_parameters": {
+    "default_synapse_depth": 100,
+    "max_synapse_depth": 200,
+    "learning_rate": 0.05,
+    "entropy_threshold": 1000
+  },
+  "deployment": {
+    "logo_url": "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/logo.png",
+    "metadata_url": "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json",
+    "auto_verify": true
+  },
+  "monitoring": {
+    "check_interval_ms": 60000,
+    "liquidity_alert_threshold": 5.0,
+    "emergency_freeze_enabled": true
+  }
 }
