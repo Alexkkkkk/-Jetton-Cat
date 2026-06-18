@@ -1,1 +1,10 @@
-
+{
+  "botUsername": "@CatPlushie_bot",
+  "masterAddress": "none",
+  "tokenName": "Plushie Cat",
+  "tokenTicker": "PLSH",
+  "maxSupply": "100000000000",
+  "decimals": 9,
+  "logoUrl": "https://raw.githubusercontent.com/Alexkkkkk/Cat/main/Image/logo.png",
+  "webAppUrl": "https://catplushie.bothost.tech"
+}
