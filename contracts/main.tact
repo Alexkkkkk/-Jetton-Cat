@@ -72,7 +72,8 @@ contract JettonMaster with Ownable, Deployable {
 
     init(owner: Address, logo_url: String) {
         self.owner = owner;
-        self.jetton_content = beginCell().storeUint(0, 8).storeStringTail(logo_url).endCell();
+        // Исправлено: используем .asSlice() для корректной записи строки
+        self.jetton_content = beginCell().storeUint(0, 8).storeSlice(logo_url.asSlice()).endCell();
     }
 
     get fun get_jetton_data(): JettonData {
