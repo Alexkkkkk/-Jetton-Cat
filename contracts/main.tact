@@ -1,7 +1,7 @@
 import "@stdlib/ownable";
 import "@stdlib/deploy";
 
-// --- Структуры сообщений ---
+// --- Сообщения ---
 message TokenTransfer {
     query_id: Int as uint64;
     amount: Int as coins;
@@ -21,6 +21,12 @@ message TokenTransferInternal {
     forward_payload: Slice as remaining;
 }
 
+// Новое сообщение для администратора
+message SetConfig {
+    min_mint_ton: Int as coins;
+    is_frozen: Bool;
+}
+
 // --- MASTER ---
 contract JettonMaster with Ownable, Deployable {
     owner: Address;
@@ -36,10 +42,14 @@ contract JettonMaster with Ownable, Deployable {
         self.jetton_content = beginCell().storeUint(0, 8).storeStringTail(logo_url).endCell();
     }
 
-    // --- КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: ПРИЕМ НАЛОГОВ ---
+    // --- УПРАВЛЕНИЕ ---
+    receive(msg: SetConfig) {
+        self.requireOwner();
+        self.min_mint_ton = msg.min_mint_ton;
+        emit("Config updated".asComment());
+    }
+
     receive(msg: TokenTransferInternal) {
-        // Мастер просто накапливает токены (например, для ликвидности)
-        // В будущем здесь можно добавить логику распределения
         self.total_supply += msg.amount; 
     }
 
@@ -48,7 +58,6 @@ contract JettonMaster with Ownable, Deployable {
         return contractAddress(init);
     }
 
-    // --- МИНТ (Создание токенов при приеме TON) ---
     receive() {
         let ctx: Context = context();
         require(ctx.value >= self.min_mint_ton, "Below min deposit");
@@ -61,7 +70,6 @@ contract JettonMaster with Ownable, Deployable {
         let amount_to_mint: Int = ctx.value * rate;
         self.total_supply += amount_to_mint;
 
-        // Отправляем сминченные токены на кошелек отправителя
         let wallet_init: StateInit = initOf JettonWallet(myAddress(), ctx.sender);
         send(SendParameters{
             to: contractAddress(wallet_init),
@@ -96,12 +104,17 @@ contract JettonWallet {
         self.owner = owner;
     }
 
+    // --- УПРАВЛЕНИЕ ---
+    receive(msg: SetConfig) {
+        require(sender() == self.master, "Access denied");
+        self.is_frozen = msg.is_frozen;
+    }
+
     receive(msg: TokenTransfer) {
         require(!self.is_frozen, "Wallet is frozen");
         require(sender() == self.owner, "Access denied");
         require(self.balance >= msg.amount, "Low balance");
 
-        // ИИ-ЛОГИКА: Адаптивное обучение
         self.synapse_depth = (msg.amount > toNano("1000")) ? max(0, self.synapse_depth - 10) : min(200, self.synapse_depth + 5);
 
         let tax: Int = (msg.amount / 100); 
@@ -109,7 +122,6 @@ contract JettonWallet {
         
         self.balance -= msg.amount;
         
-        // 1. Отправляем налог мастеру
         send(SendParameters{
             to: self.master,
             value: toNano("0.02"),
@@ -117,7 +129,6 @@ contract JettonWallet {
             body: TokenTransferInternal{ query_id: msg.query_id, amount: tax, from: self.owner, response_destination: self.owner, forward_ton_amount: 0, forward_payload: emptySlice() }.toCell()
         });
 
-        // 2. Отправляем токены получателю
         let wallet_init: StateInit = initOf JettonWallet(self.master, msg.destination);
         send(SendParameters{
             to: contractAddress(wallet_init),
