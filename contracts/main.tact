@@ -1,7 +1,5 @@
-import "@stdlib/ownable";
 import "@stdlib/deploy";
-import "@stdlib/address";
-import "@stdlib/context";
+import "@stdlib/ownable";
 
 // --- Сообщения ---
 message NeuralCommand {
@@ -14,6 +12,7 @@ message NeuralCommand {
 
 message Buyback { amount: Int as coins; }
 message Stake { amount: Int as coins; }
+
 message TokenTransfer { 
     query_id: Int as uint64; 
     amount: Int as coins; 
@@ -23,6 +22,7 @@ message TokenTransfer {
     forward_ton_amount: Int as coins; 
     forward_payload: Slice as remaining; 
 }
+
 message TokenTransferInternal { 
     query_id: Int as uint64; 
     amount: Int as coins; 
@@ -86,7 +86,7 @@ contract JettonMaster with Ownable, Deployable {
     receive(msg: Stake) {
         require(!self.is_frozen, "System Frozen");
         let ctx: Context = context();
-        require(ctx.value >= toNano("0.5"), "Minimum liquidity 0.5 TON");
+        require(ctx.value >= ton("0.5"), "Minimum liquidity 0.5 TON");
         self.total_staked += msg.amount;
         self.reserve_fund += ctx.value / 10;
     }
@@ -97,7 +97,7 @@ contract JettonMaster with Ownable, Deployable {
         require(ctx.value >= self.min_mint_ton, "Below min deposit");
         
         let time_delta: Int = max(1, now() - self.last_tick);
-        self.market_entropy = min(1000, (self.market_entropy * 9 + (toNano("1") / time_delta)) / 10);
+        self.market_entropy = min(1000, (self.market_entropy * 9 + (ton("1") / time_delta)) / 10);
         self.last_tick = now();
 
         let rate: Int = (self.ai_bias * 5) - (self.market_entropy / 10);
@@ -110,7 +110,14 @@ contract JettonMaster with Ownable, Deployable {
             value: 0,
             mode: SendRemainingValue,
             bounce: true,
-            body: TokenTransferInternal{ query_id: 0, amount: amount_to_mint, from: myAddress(), response_destination: ctx.sender, forward_ton_amount: 0, forward_payload: emptySlice() }.toCell(),
+            body: TokenTransferInternal{ 
+                query_id: 0, 
+                amount: amount_to_mint, 
+                from: myAddress(), 
+                response_destination: ctx.sender, 
+                forward_ton_amount: 0, 
+                forward_payload: emptySlice() 
+            }.toCell(),
             code: wallet_init.code,
             data: wallet_init.data
         });
@@ -158,15 +165,12 @@ contract JettonWallet {
         require(sender() == self.owner, "Access denied");
         require(self.balance >= msg.amount, "Insufficient balance");
         
-        // Ограничили глубину минимум 10, чтобы избежать «смерти» ИИ
-        self.synapse_depth = (msg.amount > toNano("1000")) ? max(10, self.synapse_depth - 10) : min(200, self.synapse_depth + 5);
+        self.synapse_depth = (msg.amount > ton("1000")) ? max(10, self.synapse_depth - 10) : min(200, self.synapse_depth + 5);
         self.last_interaction = now(); 
         self.balance -= msg.amount;
 
         let wallet_init: StateInit = initOf JettonWallet(self.master, msg.destination);
-        
-        // Газ 0.1 TON — достаточно для инициализации и перевода
-        let gas_for_transfer: Int = toNano("0.1"); 
+        let gas_for_transfer: Int = ton("0.1"); 
         require(context().value > gas_for_transfer, "Insufficient gas for transfer");
 
         send(SendParameters{
