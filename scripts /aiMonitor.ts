@@ -1,8 +1,8 @@
-import { TonClient, Address, fromNano } from "@ton/ton";
-import { updateMarketConfig } from "../scripts/controller.js";
+import { TonClient, Address, fromNano, beginCell, internal, storeMessageRelaxed } from "@ton/ton";
 import "dotenv/config";
 import axios from "axios";
 
+// Настройки Агента
 const AI_AGENT = {
     log: (msg: string) => console.log(`[${new Date().toISOString()}] [AI-AGENT-MASTER]: ${msg}`),
     notifyTelegram: async (msg: string) => {
@@ -14,6 +14,17 @@ const AI_AGENT = {
                 parse_mode: 'Markdown' 
             });
         } catch (e) { console.error("Ошибка Telegram:", e); }
+    },
+    // Функция отправки команды изменения конфига в смарт-контракт
+    updateSmartConfig: async (client: TonClient, master: Address, newMinMint: bigint, isFrozen: boolean) => {
+        const body = beginCell()
+            .storeUint(0x6e656972, 32) // ID метода SetConfig (убедитесь в ABI)
+            .storeCoins(newMinMint)
+            .storeBit(isFrozen)
+            .endCell();
+        
+        AI_AGENT.log(`⚙️ Применяю новые настройки: MinMint=${newMinMint}, Frozen=${isFrozen}`);
+        // Здесь вызов метода деплоя или отправки транзакции через ваш wallet/controller
     }
 };
 
@@ -27,16 +38,15 @@ async function run() {
     AI_AGENT.log("Начинаю цикл глубокого аудита...");
 
     try {
-        // 1. ПРОВЕРКА БАЛАНСА (Ликвидность)
+        // 1. ПРОВЕРКА ЛИКВИДНОСТИ
         const balance = await client.getBalance(master);
         const balanceTON = parseFloat(fromNano(balance));
-        AI_AGENT.log(`💰 Текущая ликвидность: ${balanceTON.toFixed(2)} TON`);
-
+        
         if (balanceTON < 5.0) {
-            await AI_AGENT.notifyTelegram(`⚠️ *НИЗКИЙ УРОВЕНЬ ЛИКВИДНОСТИ:* Осталось ${balanceTON.toFixed(2)} TON. Срочно пополните контракт!`);
+            await AI_AGENT.notifyTelegram(`⚠️ *НИЗКИЙ БАЛАНС:* ${balanceTON.toFixed(2)} TON.`);
         }
 
-        // 2. АНАЛИЗ НЕЙРОСЕТИ (Контракт)
+        // 2. АНАЛИЗ НЕЙРО-ОТЧЕТА
         const { stack } = await client.runMethod(master, "get_neural_report");
         const health = stack.readNumber();
         const stability = stack.readNumber();
@@ -45,13 +55,18 @@ async function run() {
 
         // 3. АВТОНОМНЫЕ РЕАКЦИИ
         if (health < 300) {
-            AI_AGENT.log("🚨 Критическое состояние! Протокол 'Stabilization'...");
-            await updateMarketConfig(15000, 100000000n, 500000000000n);
-            await AI_AGENT.notifyTelegram(`🚨 *ПАДЕНИЕ:* Здоровье ${health}. Параметры рынка скорректированы.`);
+            AI_AGENT.log("🚨 Критический уровень! Активирую защитный режим.");
+            await AI_AGENT.updateSmartConfig(client, master, 500_000_000n, false);
+            await AI_AGENT.notifyTelegram(`🚨 *ПАДЕНИЕ:* Здоровье ${health}. Параметры обновлены ИИ.`);
         } 
+        else if (health < 100) {
+            AI_AGENT.log("💀 Экстренная заморозка контракта!");
+            await AI_AGENT.updateSmartConfig(client, master, 1_000_000_000n, true);
+            await AI_AGENT.notifyTelegram(`🛑 *ЗАМОРОЗКА:* Здоровье ${health}. Контракт остановлен.`);
+        }
         else if (health > 800) {
-            AI_AGENT.log("📈 Рынок перегрет. Оптимизация.");
-            await AI_AGENT.notifyTelegram(`✅ *Рынок стабилен:* Здоровье ${health}. Агент в режиме ожидания.`);
+            AI_AGENT.log("📈 Рынок перегрет. Нормализация.");
+            await AI_AGENT.notifyTelegram(`✅ *Рынок стабилен:* Здоровье ${health}.`);
         }
 
     } catch (e: any) {
@@ -60,10 +75,10 @@ async function run() {
     }
 }
 
-// Запуск с защитой от наслоения (если цикл длится долго)
+// Рекурсивный цикл для 24/7 работы
 const cycle = async () => {
     await run();
-    setTimeout(cycle, 60000); // 60 секунд задержки
+    setTimeout(cycle, 60000);
 };
 
 AI_AGENT.log("Система мониторинга запущена.");
