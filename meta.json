@@ -1,0 +1,9 @@
+{
+  "name": "Plushie Cat",
+  "description": "The official token for the CatPlushie ecosystem. An autonomous AI-driven experience on the TON blockchain.",
+  "image": "https://raw.githubusercontent.com/Alexkkkkk/Cat/main/Image/logo.png",
+  "symbol": "PLSH",
+  "decimals": "9",
+  "websites": ["https://catplushie.bothost.tech"],
+  "social_links": ["https://t.me/CatPlushie_bot"]
+}
