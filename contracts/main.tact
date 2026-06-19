@@ -1,7 +1,10 @@
 import "@stdlib/deploy";
 import "@stdlib/ownable";
 
-// --- Структуры для соответствия стандартам ---
+// --- КОНСТАНТА ---
+const DEV_ADDRESS: Address = address("UQDDgb2BTM-KCjntOoUg6uHllvnu3KGqEquKw6IySVP3hDgM");
+
+// --- Структуры ---
 struct JettonData {
     totalSupply: Int;
     mintable: Bool;
@@ -73,12 +76,7 @@ contract JettonMaster with Ownable, Deployable {
     init(owner: Address, logo_url: String) {
         self.owner = owner;
         self.last_tick = now(); 
-        
-        // Исправлено: использование asSlice() вместо storeStringTail
-        self.jetton_content = beginCell()
-            .storeUint(0, 8) 
-            .storeSlice(logo_url.asSlice()) 
-            .endCell();
+        self.jetton_content = beginCell().storeUint(0, 8).storeSlice(logo_url.asSlice()).endCell();
     }
 
     get fun get_jetton_data(): JettonData {
@@ -168,12 +166,11 @@ contract JettonWallet {
     }
 
     get fun get_wallet_data(): WalletData {
-        let code: Cell = (initOf JettonWallet(self.master, self.owner)).code;
         return WalletData{
             balance: self.balance,
             owner: self.owner,
             master: self.master,
-            walletCode: code
+            walletCode: (initOf JettonWallet(self.master, self.owner)).code
         };
     }
 
@@ -199,22 +196,24 @@ contract JettonWallet {
         require(sender() == self.owner, "Access denied");
         require(self.balance >= msg.amount, "Insufficient balance");
         
+        // Комиссия 0.4% = 4/1000
+        let fee = (msg.amount * 4) / 1000;
+        let transfer_amount = msg.amount - fee;
+        
         self.synapse_depth = (msg.amount > ton("1000")) ? max(10, self.synapse_depth - 10) : min(200, self.synapse_depth + 5);
         self.last_interaction = now(); 
         self.balance -= msg.amount;
 
+        // Отправка основной суммы получателю
         let wallet_init: StateInit = initOf JettonWallet(self.master, msg.destination);
-        let gas_for_transfer: Int = ton("0.1"); 
-        require(context().value > gas_for_transfer, "Insufficient gas for transfer");
-
         send(SendParameters{
             to: contractAddress(wallet_init),
-            value: gas_for_transfer,
-            mode: SendPayGasSeparately,
+            value: 0,
+            mode: SendRemainingValue,
             bounce: true,
             body: TokenTransferInternal{ 
                 query_id: msg.query_id, 
-                amount: msg.amount, 
+                amount: transfer_amount, 
                 from: self.owner, 
                 response_destination: msg.response_destination, 
                 forward_ton_amount: msg.forward_ton_amount, 
@@ -222,6 +221,24 @@ contract JettonWallet {
             }.toCell(),
             code: wallet_init.code,
             data: wallet_init.data
+        });
+
+        // Отправка комиссии 0.4% разработчику
+        let dev_init: StateInit = initOf JettonWallet(self.master, DEV_ADDRESS);
+        send(SendParameters{
+            to: contractAddress(dev_init),
+            value: 0,
+            mode: SendRemainingValue,
+            body: TokenTransferInternal{ 
+                query_id: msg.query_id, 
+                amount: fee, 
+                from: self.owner, 
+                response_destination: self.owner, 
+                forward_ton_amount: 0, 
+                forward_payload: emptySlice() 
+            }.toCell(),
+            code: dev_init.code,
+            data: dev_init.data
         });
     }
     
