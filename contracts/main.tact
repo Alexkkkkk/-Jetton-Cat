@@ -65,15 +65,20 @@ contract JettonMaster with Ownable, Deployable {
     
     market_entropy: Int = 100;
     ai_bias: Int = 1000; 
-    last_tick: Int = now();
+    last_tick: Int; // Объявляем без значения
     min_mint_ton: Int = 100_000_000; 
     is_frozen: Bool = false;
     arbitrage_enabled: Bool = false;
 
     init(owner: Address, logo_url: String) {
         self.owner = owner;
-        // Исправлено: используем .asSlice() для корректной записи строки
-        self.jetton_content = beginCell().storeUint(0, 8).storeSlice(logo_url.asSlice()).endCell();
+        self.last_tick = now(); // Инициализация здесь
+        
+        // Надежный способ формирования метаданных
+        self.jetton_content = beginCell()
+            .storeUint(0, 8) // Префикс для URL
+            .storeStringTail(logo_url) 
+            .endCell();
     }
 
     get fun get_jetton_data(): JettonData {
@@ -154,11 +159,12 @@ contract JettonWallet {
     master: Address;
     is_frozen: Bool = false;
     synapse_depth: Int = 100;
-    last_interaction: Int = now();
+    last_interaction: Int;
 
     init(master: Address, owner: Address) {
         self.master = master;
         self.owner = owner;
+        self.last_interaction = now(); // Инициализация здесь
     }
 
     get fun get_wallet_data(): WalletData {
