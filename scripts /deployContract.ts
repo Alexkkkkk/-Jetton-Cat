@@ -1,5 +1,5 @@
-import { toNano, beginCell } from '@ton/core';
-import { JettonMaster } from '../wrappers/JettonMaster'; 
+import { toNano } from '@ton/core';
+import { JettonMaster } from '../build/main/tact_JettonMaster'; // Убедитесь, что путь к билду верный
 import { NetworkProvider } from '@ton/blueprint';
 import * as fs from 'fs';
 
@@ -16,18 +16,13 @@ export async function run(provider: NetworkProvider) {
 
     AI_AGENT.log(`Инициализация деплоя в ${network}...`);
 
-    // 1. Конфигурация метаданных
+    // 1. Конфигурация метаданных (RAW-ссылка на ваш metadata.json)
     const metadataUrl = "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json";
     
-    // Формируем контент (TEP-64)
-    const content = beginCell()
-        .storeUint(0, 8) 
-        .storeStringTail(metadataUrl)
-        .endCell();
-
     // 2. Инициализация контракта
+    // ВАЖНО: Передаем metadataUrl как строку, так как в main.tact init принимает String
     const jettonMaster = provider.open(
-        JettonMaster.fromInit(sender.address!, content)
+        await JettonMaster.fromInit(sender.address!, metadataUrl)
     );
 
     // 3. Предварительный аудит
