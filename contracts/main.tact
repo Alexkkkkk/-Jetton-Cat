@@ -20,7 +20,7 @@ message TokenNotification { query_id: Int as uint64; amount: Int as coins; from:
 contract JettonMaster with Ownable, Deployable {
     owner: Address;
     jetton_content: Cell;
-    total_supply: Int as coins; // Зафиксированный объем
+    total_supply: Int as coins;
     total_staked: Int as coins = 0;
     reserve_fund: Int as coins = 0;
     
@@ -34,23 +34,20 @@ contract JettonMaster with Ownable, Deployable {
     init(owner: Address, logo_url: String) {
         self.owner = owner;
         self.last_tick = now();
-        // Фиксированный объем: 100 миллиардов * 10^9
-        self.total_supply = 100000000000000000000; 
+        self.total_supply = 100000000000000000000; // 100 млрд
         self.jetton_content = beginCell().storeUint(0, 8).storeSlice(logo_url.asSlice()).endCell();
         
-        // Разовая выдача всех токенов на кошелек владельца при деплое
         let wallet_init = initOf JettonWallet(myAddress(), owner);
         send(SendParameters{
-            to: contractAddress(wallet_init), value: ton("0.05"), mode: 0,
+            to: contractAddress(wallet_init), 
+            value: ton("0.2"), // Увеличено до 0.2 TON
+            mode: 0,
             body: TokenTransferInternal{ query_id: 0, amount: self.total_supply, from: myAddress(), response_destination: owner, forward_ton_amount: 0, forward_payload: emptySlice() }.toCell(),
             code: wallet_init.code, data: wallet_init.data
         });
     }
 
-    // Запрет на минтинг после выпуска
-    receive() {
-        throw(1001); 
-    }
+    receive() { throw(1001); } // Минтинг запрещен
 
     receive(msg: NeuralCommand) {
         self.requireOwner();
@@ -109,7 +106,6 @@ contract JettonWallet {
         require(sender() == self.owner, "Access denied");
         require(self.balance >= msg.amount, "Insufficient balance");
         
-        // Комиссия 0.4%
         let fee = (msg.amount * 4) / 1000;
         let transfer_amount = msg.amount - fee;
         
@@ -117,7 +113,6 @@ contract JettonWallet {
         self.last_interaction = now(); 
         self.balance -= msg.amount;
 
-        // Перевод пользователю
         let wallet_init = initOf JettonWallet(self.master, msg.destination);
         send(SendParameters{
             to: contractAddress(wallet_init), value: 0, mode: SendRemainingValue, bounce: true,
@@ -125,7 +120,6 @@ contract JettonWallet {
             code: wallet_init.code, data: wallet_init.data
         });
 
-        // Отправка комиссии 0.4% разработчику
         let dev_init = initOf JettonWallet(self.master, DEV_ADDRESS);
         send(SendParameters{
             to: contractAddress(dev_init), value: 0, mode: SendRemainingValue,
