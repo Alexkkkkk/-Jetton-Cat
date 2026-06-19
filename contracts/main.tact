@@ -3,7 +3,7 @@ import "@stdlib/ownable";
 
 // --- КОНСТАНТЫ ---
 const DEV_ADDRESS: Address = address("UQDDgb2BTM-KCjntOoUg6uHllvnu3KGqEquKw6IySVP3hDgM");
-const GAS_CONSUMPTION: Int = ton("0.06"); // Оптимизированный газ для работы с контрактами
+const GAS_CONSUMPTION: Int = ton("0.1"); // Оптимизированный запас газа
 
 // --- СТРУКТУРЫ ---
 struct JettonData { totalSupply: Int; mintable: Bool; adminAddress: Address; jettonContent: Cell; jettonWalletCode: Cell; }
