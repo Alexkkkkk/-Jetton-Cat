@@ -1,0 +1,14 @@
+{
+  "projects": [
+    {
+      "name": "jetton-cat",
+      "path": "contracts/main.tact",
+      "output": "output",
+      "mode": "tact",
+      "options": {
+        "debug": true,
+        "external": false
+      }
+    }
+  ]
+}
