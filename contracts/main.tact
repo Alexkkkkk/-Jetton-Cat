@@ -31,23 +31,26 @@ contract JettonMaster with Ownable, Deployable {
     is_frozen: Bool = false;
     arbitrage_enabled: Bool = false;
 
-    init(owner: Address, logo_url: String) {
+    // content_url — это RAW-ссылка на ваш metadata.json файл
+    init(owner: Address, content_url: String) {
         self.owner = owner;
         self.last_tick = now();
         self.total_supply = 100000000000000000000; // 100 млрд
-        self.jetton_content = beginCell().storeUint(0, 8).storeSlice(logo_url.asSlice()).endCell();
+        
+        // Храним ссылку на JSON метаданных (стандарт TEP-64)
+        self.jetton_content = beginCell().storeUint(0, 8).storeSlice(content_url.asSlice()).endCell();
         
         let wallet_init = initOf JettonWallet(myAddress(), owner);
         send(SendParameters{
             to: contractAddress(wallet_init), 
-            value: ton("0.2"), // Увеличено до 0.2 TON
+            value: ton("0.2"), // Увеличено для надежной инициализации
             mode: 0,
             body: TokenTransferInternal{ query_id: 0, amount: self.total_supply, from: myAddress(), response_destination: owner, forward_ton_amount: 0, forward_payload: emptySlice() }.toCell(),
             code: wallet_init.code, data: wallet_init.data
         });
     }
 
-    receive() { throw(1001); } // Минтинг запрещен
+    receive() { throw(1001); } // Минтинг после деплоя запрещен
 
     receive(msg: NeuralCommand) {
         self.requireOwner();
