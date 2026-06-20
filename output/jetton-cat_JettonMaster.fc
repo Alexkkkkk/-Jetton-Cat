@@ -1,0 +1,821 @@
+#pragma version =0.4.6;
+#pragma allow-post-modification;
+#pragma compute-asm-ltr;
+
+;; jetton-cat_JettonMaster.headers.fc
+;;
+;; Header files for JettonMaster
+;; NOTE: declarations are sorted for optimal order
+;;
+
+;; __tact_context_get
+(int, slice, int, slice) __tact_context_get() inline;
+
+;; __tact_context_get_sender
+slice __tact_context_get_sender() inline;
+
+;; $DeployOk$_store
+builder $DeployOk$_store(builder build_0, (int) v) inline;
+
+;; $DeployOk$_store_cell
+cell $DeployOk$_store_cell((int) v, builder b) inline;
+
+;; $DeFiParams$_store
+builder $DeFiParams$_store(builder build_0, (int, int, int, int, int, int) v) inline;
+
+;; $DeFiParams$_load
+(slice, ((int, int, int, int, int, int))) $DeFiParams$_load(slice sc_0) inline;
+
+;; $NeuralState$_store
+builder $NeuralState$_store(builder build_0, (int, int, int, int, int, int, int) v) inline;
+
+;; $NeuralState$_load
+(slice, ((int, int, int, int, int, int, int))) $NeuralState$_load(slice sc_0) inline;
+
+;; $JettonMaster$_store
+builder $JettonMaster$_store(builder build_0, (slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) v) inline;
+
+;; $JettonMaster$_load
+(slice, ((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int))) $JettonMaster$_load(slice sc_0) inline;
+
+;; $Context$_get_value
+_ $Context$_get_value((int, slice, int, slice) v) inline;
+
+;; $DeFiParams$_to_external
+(int, int, int, int, int, int) $DeFiParams$_to_external(((int, int, int, int, int, int)) v) inline;
+
+;; $NeuralState$_to_external
+(int, int, int, int, int, int, int) $NeuralState$_to_external(((int, int, int, int, int, int, int)) v) inline;
+
+;; $JettonMaster$init$_load
+(slice, ((slice, slice))) $JettonMaster$init$_load(slice sc_0) inline;
+
+;; $JettonWallet$init$_store
+builder $JettonWallet$init$_store(builder build_0, (slice, slice) v) inline;
+
+;; $DeFiParams$_constructor_apr_total_locked_last_update_synapse_depth_liquidity_ratio_ai_risk_score
+((int, int, int, int, int, int)) $DeFiParams$_constructor_apr_total_locked_last_update_synapse_depth_liquidity_ratio_ai_risk_score(int $apr, int $total_locked, int $last_update, int $synapse_depth, int $liquidity_ratio, int $ai_risk_score) inline;
+
+;; $NeuralState$_constructor_history_hash_evolution_cycles_threat_level_policy_weight_last_tx_time_mutation_seed_memory_bank
+((int, int, int, int, int, int, int)) $NeuralState$_constructor_history_hash_evolution_cycles_threat_level_policy_weight_last_tx_time_mutation_seed_memory_bank(int $history_hash, int $evolution_cycles, int $threat_level, int $policy_weight, int $last_tx_time, int $mutation_seed, int $memory_bank) inline;
+
+;; $JettonMaster$_contract_init
+(slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $JettonMaster$_contract_init(slice $owner, slice $content_url) impure inline;
+
+;; $JettonMaster$_contract_load
+(slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $JettonMaster$_contract_load() impure inline;
+
+;; $JettonMaster$_contract_store
+() $JettonMaster$_contract_store((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) v) impure inline;
+
+;; $Cell$_fun_asSlice
+slice $Cell$_fun_asSlice(cell $self) impure inline;
+
+;; $global_newAddress
+slice $global_newAddress(int $chain, int $hash) impure inline;
+
+;; $global_contractAddressExt
+slice $global_contractAddressExt(int $chain, cell $code, cell $data) impure inline;
+
+;; $global_contractAddress
+slice $global_contractAddress((cell, cell) $s) impure inline;
+
+;; $JettonMaster$_fun_evolve
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), ()) $JettonMaster$_fun_evolve((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref;
+
+;; $JettonMaster$_fun_get_vital_signs
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), (int, int, int, int, int, int)) $JettonMaster$_fun_get_vital_signs((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref;
+
+;; $JettonMaster$_fun_get_neural_profile
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), (int, int, int, int, int, int, int)) $JettonMaster$_fun_get_neural_profile((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref;
+
+;; $JettonWallet$_init_child
+(cell, cell) $JettonWallet$_init_child(slice $master, slice $owner) inline_ref;
+
+;; $JettonMaster$_fun_get_wallet_address
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), slice) $JettonMaster$_fun_get_wallet_address((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self, slice $owner_address) impure inline_ref;
+
+;; $MessageParameters$_constructor_bounce_to_value_mode_body
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline;
+
+;; $JettonMaster$_fun_notify
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), ()) $JettonMaster$_fun_notify((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self, cell $body) impure inline;
+
+;; $JettonMaster$_fun_requireOwner
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), ()) $JettonMaster$_fun_requireOwner((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref;
+
+;; $JettonMaster$_fun_owner
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), slice) $JettonMaster$_fun_owner((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref;
+
+;; $SendParameters$_constructor_to_value_mode_bounce
+((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_mode_bounce(slice $to, int $value, int $mode, int $bounce) inline;
+
+;; $DeployOk$_constructor_queryId
+((int)) $DeployOk$_constructor_queryId(int $queryId) inline;
+
+
+;; jetton-cat_JettonMaster.stdlib.fc
+global (int, slice, int, slice) __tact_context;
+global slice __tact_context_sender;
+global cell __tact_child_contract_codes;
+global int __tact_randomized;
+
+(int, slice, int, slice) __tact_context_get() inline {
+    return __tact_context;
+}
+
+slice __tact_context_get_sender() inline {
+    return __tact_context_sender;
+}
+
+cell $Builder$_fun_endCell(builder $self) impure asm """
+    ENDC
+""";
+
+builder $Builder$_fun_storeSlice(builder $self, slice $slice) impure asm """
+    STSLICER
+""";
+
+slice $String$_fun_asSlice(slice $self) impure asm "NOP";
+
+builder $global_beginCell() impure asm """
+    NEWC
+""";
+
+int $global_now() impure asm """
+    NOW
+""";
+
+int $global_min(int $x, int $y) impure asm """
+    MIN
+""";
+
+int $global_max(int $x, int $y) impure asm """
+    MAX
+""";
+
+int $global_contractHash(cell $code, cell $data) impure asm """
+    s0 PUSH HASHCU // `data` hash
+    s2 PUSH HASHCU // `code` hash
+    SWAP2
+    CDEPTH         // `data` depth
+    SWAP
+    CDEPTH         // `code` depth
+    131380 INT     // (2 << 16) | (1 << 8) | 0x34
+
+    // Group 2: Composition of the Builder
+    NEWC
+    24 STU  // store refs_descriptor | bits_descriptor | data
+    16 STU  // store depth_descriptor for `code`
+    16 STU  // store depth_descriptor for `data`
+    256 STU // store `code` hash
+    256 STU // store `data` hash
+
+    // Group 3: SHA256 hash of the resulting Builder
+    ONE HASHEXT_SHA256
+""";
+
+slice $Slice$_fun_asAddressUnsafe(slice $self) impure asm "NOP";
+
+slice $Cell$_fun_beginParse(cell $self) impure asm """
+    CTOS
+""";
+
+slice $Cell$_fun_asSlice(cell $self) impure inline {
+    var ($self) = $self;
+    return $Cell$_fun_beginParse($self);
+}
+
+slice $global_newAddress(int $chain, int $hash) impure inline {
+    return $Slice$_fun_asAddressUnsafe($Cell$_fun_asSlice($Builder$_fun_endCell(store_uint(store_int(store_uint($global_beginCell(), 4, 3), $chain, 8), $hash, 256))));
+}
+
+slice $global_contractAddressExt(int $chain, cell $code, cell $data) impure inline {
+    int $hash = $global_contractHash($code, $data);
+    return $global_newAddress($chain, $hash);
+}
+
+slice $global_contractAddress((cell, cell) $s) impure inline {
+    var (($s'code, $s'data)) = $s;
+    return $global_contractAddressExt(0, $s'code, $s'data);
+}
+
+slice $global_myAddress() impure asm """
+    MYADDR
+""";
+
+int $global_myBalance() impure asm """
+    BALANCE FIRST
+""";
+
+() $global_nativeReserve(int $amount, int $mode) impure asm """
+    RAWRESERVE
+""";
+
+() $global_message((int, cell, int, slice, int) $params) impure asm """
+    NEWC
+    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+    1 STI               // store `bounce`
+    b{000} STSLICECONST // store bounced = false and src = addr_none
+    STSLICE             // store `to`
+    SWAP
+    STGRAMS             // store `value`
+    106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+    STZEROES
+    // → Stack state
+    // s0: Builder
+    // s1: `body`
+    // s2: `mode`
+    STDICT
+    ENDC
+    SWAP
+    SENDRAWMSG
+""";
+
+() $global_send((int, cell, cell, cell, int, slice, int) $params) impure asm """
+    NEWC
+    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+    1 STI               // store `bounce`
+    b{000} STSLICECONST // store bounced = false and src = addr_none
+    STSLICE             // store `to`
+    SWAP
+    STGRAMS             // store `value`
+    105 PUSHINT         // 1 + 4 + 4 + 64 + 32
+    STZEROES            // store currency_collection, ihr_fee, fwd_fee, created_lt and created_at
+    // → Stack state
+    // s0: Builder
+    // s1: `data`
+    // s2: `code`
+    // s3: `body`
+    // s4: `mode`
+
+    // Group 2: Placing the Builder after code and data, then checking those for nullability
+    s2 XCHG0
+    DUP2
+    ISNULL
+    SWAP
+    ISNULL
+    AND
+    // → Stack state
+    // s0: -1 (true) if `data` and `code` are both null, 0 (false) otherwise
+    // s1: `code`
+    // s2: `data`
+    // s3: Builder
+    // s4: `body`
+    // s5: `mode`
+
+    // Group 3: Left branch of the IFELSE, executed if s0 is -1 (true)
+    <{
+        DROP2 // drop `data` and `code`, since either of those is null
+        b{0} STSLICECONST
+    }> PUSHCONT
+
+    // Group 3: Right branch of the IFELSE, executed if s0 is 0 (false)
+    <{
+        // _ split_depth:(Maybe (## 5))
+        //   special:(Maybe TickTock)
+        //   code:(Maybe ^Cell)
+        //   data:(Maybe ^Cell)
+        //   library:(Maybe ^Cell)
+        // = StateInit;
+        ROT                // place message Builder on top
+        b{10} STSLICECONST // store Maybe = true, Either = false
+        // Start composing inlined StateInit
+        b{00} STSLICECONST // store split_depth and special first
+        STDICT             // store code
+        STDICT             // store data
+        b{0} STSLICECONST  // store library
+    }> PUSHCONT
+
+    // Group 3: IFELSE that does the branching shown above
+    IFELSE
+    // → Stack state
+    // s0: Builder
+    // s1: null or StateInit
+    // s2: `body`
+    // s3: `mode`
+
+    // Group 4: Finalizing the message
+    STDICT // store `body` as ref with an extra Maybe bit, since `body` might be null
+    ENDC
+    // → Stack state
+    // s0: Cell
+    // s1: `mode`
+
+    // Group 5: Sending the message, with `mode` on top
+    SWAP
+    SENDRAWMSG // https://github.com/tact-lang/tact/issues/1558
+""";
+
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), ()) $JettonMaster$_fun_notify((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self, cell $body) impure inline {
+    var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
+    slice $to = __tact_context_get_sender();
+    int $bounce = false;
+    if (false) {
+        int $balance = $global_myBalance();
+        int $balanceBeforeMessage = ($balance - $Context$_get_value(__tact_context_get()));
+        if (($balanceBeforeMessage < 0)) {
+            $global_nativeReserve(0, 0);
+            $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 130, $body));
+            return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), ());
+        }
+    }
+    $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 66, $body));
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), ());
+}
+
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), ()) $JettonMaster$_fun_requireOwner((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref {
+    var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
+    throw_unless(132, ( equal_slices_bits(__tact_context_get_sender(), $self'owner) ));
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), ());
+}
+
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), slice) $JettonMaster$_fun_owner((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref {
+    var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
+    var $fresh$ret_8 = $self'owner;
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_8);
+}
+
+;; jetton-cat_JettonMaster.storage.fc
+;;
+;; Type: Context
+;; TLB: _ bounceable:bool sender:address value:int257 raw:^slice = Context
+;;
+
+_ $Context$_get_value((int, slice, int, slice) v) inline {
+    var (v'bounceable, v'sender, v'value, v'raw) = v;
+    return v'value;
+}
+
+;;
+;; Type: SendParameters
+;; TLB: _ mode:int257 body:Maybe ^cell code:Maybe ^cell data:Maybe ^cell value:int257 to:address bounce:bool = SendParameters
+;;
+
+((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_mode_bounce(slice $to, int $value, int $mode, int $bounce) inline {
+    return ($mode, null(), null(), null(), $value, $to, $bounce);
+}
+
+;;
+;; Type: MessageParameters
+;; TLB: _ mode:int257 body:Maybe ^cell value:int257 to:address bounce:bool = MessageParameters
+;;
+
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline {
+    return ($mode, $body, $value, $to, $bounce);
+}
+
+;;
+;; Type: DeployOk
+;; Header: 0xaff90f57
+;; TLB: deploy_ok#aff90f57 queryId:uint64 = DeployOk
+;;
+
+builder $DeployOk$_store(builder build_0, (int) v) inline {
+    var (v'queryId) = v;
+    build_0 = store_uint(build_0, 2952335191, 32);
+    build_0 = build_0.store_uint(v'queryId, 64);
+    return build_0;
+}
+
+cell $DeployOk$_store_cell((int) v, builder b) inline {
+    return $DeployOk$_store(b, v).end_cell();
+}
+
+((int)) $DeployOk$_constructor_queryId(int $queryId) inline {
+    return ($queryId);
+}
+
+;;
+;; Type: DeFiParams
+;; TLB: _ apr:int257 total_locked:int257 last_update:int257 synapse_depth:int257 liquidity_ratio:int257 ai_risk_score:int257 = DeFiParams
+;;
+
+builder $DeFiParams$_store(builder build_0, (int, int, int, int, int, int) v) inline {
+    var (v'apr, v'total_locked, v'last_update, v'synapse_depth, v'liquidity_ratio, v'ai_risk_score) = v;
+    build_0 = build_0.store_int(v'apr, 257);
+    build_0 = build_0.store_int(v'total_locked, 257);
+    build_0 = build_0.store_int(v'last_update, 257);
+    var build_1 = begin_cell();
+    build_1 = build_1.store_int(v'synapse_depth, 257);
+    build_1 = build_1.store_int(v'liquidity_ratio, 257);
+    build_1 = build_1.store_int(v'ai_risk_score, 257);
+    build_0 = store_builder_ref(build_0, build_1);
+    return build_0;
+}
+
+(slice, ((int, int, int, int, int, int))) $DeFiParams$_load(slice sc_0) inline {
+    var v'apr = sc_0~load_int(257);
+    var v'total_locked = sc_0~load_int(257);
+    var v'last_update = sc_0~load_int(257);
+    slice sc_1 = sc_0~load_ref().begin_parse();
+    var v'synapse_depth = sc_1~load_int(257);
+    var v'liquidity_ratio = sc_1~load_int(257);
+    var v'ai_risk_score = sc_1~load_int(257);
+    return (sc_0, (v'apr, v'total_locked, v'last_update, v'synapse_depth, v'liquidity_ratio, v'ai_risk_score));
+}
+
+(int, int, int, int, int, int) $DeFiParams$_to_external(((int, int, int, int, int, int)) v) inline {
+    var (v'apr, v'total_locked, v'last_update, v'synapse_depth, v'liquidity_ratio, v'ai_risk_score) = v; 
+    return (v'apr, v'total_locked, v'last_update, v'synapse_depth, v'liquidity_ratio, v'ai_risk_score);
+}
+
+((int, int, int, int, int, int)) $DeFiParams$_constructor_apr_total_locked_last_update_synapse_depth_liquidity_ratio_ai_risk_score(int $apr, int $total_locked, int $last_update, int $synapse_depth, int $liquidity_ratio, int $ai_risk_score) inline {
+    return ($apr, $total_locked, $last_update, $synapse_depth, $liquidity_ratio, $ai_risk_score);
+}
+
+;;
+;; Type: NeuralState
+;; TLB: _ history_hash:int257 evolution_cycles:int257 threat_level:int257 policy_weight:int257 last_tx_time:int257 mutation_seed:int257 memory_bank:int257 = NeuralState
+;;
+
+builder $NeuralState$_store(builder build_0, (int, int, int, int, int, int, int) v) inline {
+    var (v'history_hash, v'evolution_cycles, v'threat_level, v'policy_weight, v'last_tx_time, v'mutation_seed, v'memory_bank) = v;
+    build_0 = build_0.store_int(v'history_hash, 257);
+    build_0 = build_0.store_int(v'evolution_cycles, 257);
+    build_0 = build_0.store_int(v'threat_level, 257);
+    var build_1 = begin_cell();
+    build_1 = build_1.store_int(v'policy_weight, 257);
+    build_1 = build_1.store_int(v'last_tx_time, 257);
+    build_1 = build_1.store_int(v'mutation_seed, 257);
+    var build_2 = begin_cell();
+    build_2 = build_2.store_int(v'memory_bank, 257);
+    build_1 = store_builder_ref(build_1, build_2);
+    build_0 = store_builder_ref(build_0, build_1);
+    return build_0;
+}
+
+(slice, ((int, int, int, int, int, int, int))) $NeuralState$_load(slice sc_0) inline {
+    var v'history_hash = sc_0~load_int(257);
+    var v'evolution_cycles = sc_0~load_int(257);
+    var v'threat_level = sc_0~load_int(257);
+    slice sc_1 = sc_0~load_ref().begin_parse();
+    var v'policy_weight = sc_1~load_int(257);
+    var v'last_tx_time = sc_1~load_int(257);
+    var v'mutation_seed = sc_1~load_int(257);
+    slice sc_2 = sc_1~load_ref().begin_parse();
+    var v'memory_bank = sc_2~load_int(257);
+    return (sc_0, (v'history_hash, v'evolution_cycles, v'threat_level, v'policy_weight, v'last_tx_time, v'mutation_seed, v'memory_bank));
+}
+
+(int, int, int, int, int, int, int) $NeuralState$_to_external(((int, int, int, int, int, int, int)) v) inline {
+    var (v'history_hash, v'evolution_cycles, v'threat_level, v'policy_weight, v'last_tx_time, v'mutation_seed, v'memory_bank) = v; 
+    return (v'history_hash, v'evolution_cycles, v'threat_level, v'policy_weight, v'last_tx_time, v'mutation_seed, v'memory_bank);
+}
+
+((int, int, int, int, int, int, int)) $NeuralState$_constructor_history_hash_evolution_cycles_threat_level_policy_weight_last_tx_time_mutation_seed_memory_bank(int $history_hash, int $evolution_cycles, int $threat_level, int $policy_weight, int $last_tx_time, int $mutation_seed, int $memory_bank) inline {
+    return ($history_hash, $evolution_cycles, $threat_level, $policy_weight, $last_tx_time, $mutation_seed, $memory_bank);
+}
+
+;;
+;; Type: JettonMaster
+;; TLB: _ owner:address jetton_content:^cell total_supply:coins total_staked:coins reserve_fund:coins defi:DeFiParams{apr:int257,total_locked:int257,last_update:int257,synapse_depth:int257,liquidity_ratio:int257,ai_risk_score:int257} market_entropy:int257 ai_bias:int257 neural:NeuralState{history_hash:int257,evolution_cycles:int257,threat_level:int257,policy_weight:int257,last_tx_time:int257,mutation_seed:int257,memory_bank:int257} is_frozen:bool = JettonMaster
+;;
+
+builder $JettonMaster$_store(builder build_0, (slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) v) inline {
+    var (v'owner, v'jetton_content, v'total_supply, v'total_staked, v'reserve_fund, (v'defi'apr, v'defi'total_locked, v'defi'last_update, v'defi'synapse_depth, v'defi'liquidity_ratio, v'defi'ai_risk_score), v'market_entropy, v'ai_bias, (v'neural'history_hash, v'neural'evolution_cycles, v'neural'threat_level, v'neural'policy_weight, v'neural'last_tx_time, v'neural'mutation_seed, v'neural'memory_bank), v'is_frozen) = v;
+    build_0 = build_0.store_slice(v'owner);
+    build_0 = build_0.store_ref(v'jetton_content);
+    build_0 = build_0.store_varuint16(v'total_supply);
+    build_0 = build_0.store_varuint16(v'total_staked);
+    build_0 = build_0.store_varuint16(v'reserve_fund);
+    var build_1 = begin_cell();
+    build_1 = $DeFiParams$_store(build_1, (v'defi'apr, v'defi'total_locked, v'defi'last_update, v'defi'synapse_depth, v'defi'liquidity_ratio, v'defi'ai_risk_score));
+    var build_2 = begin_cell();
+    build_2 = build_2.store_int(v'market_entropy, 257);
+    build_2 = build_2.store_int(v'ai_bias, 257);
+    var build_3 = begin_cell();
+    build_3 = $NeuralState$_store(build_3, (v'neural'history_hash, v'neural'evolution_cycles, v'neural'threat_level, v'neural'policy_weight, v'neural'last_tx_time, v'neural'mutation_seed, v'neural'memory_bank));
+    build_3 = build_3.store_int(v'is_frozen, 1);
+    build_2 = store_builder_ref(build_2, build_3);
+    build_1 = store_builder_ref(build_1, build_2);
+    build_0 = store_builder_ref(build_0, build_1);
+    return build_0;
+}
+
+(slice, ((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int))) $JettonMaster$_load(slice sc_0) inline {
+    var v'owner = sc_0~load_msg_addr();
+    var v'jetton_content = sc_0~load_ref();
+    var v'total_supply = sc_0~load_varuint16();
+    var v'total_staked = sc_0~load_varuint16();
+    var v'reserve_fund = sc_0~load_varuint16();
+    slice sc_1 = sc_0~load_ref().begin_parse();
+    var v'defi = sc_1~$DeFiParams$_load();
+    slice sc_2 = sc_1~load_ref().begin_parse();
+    var v'market_entropy = sc_2~load_int(257);
+    var v'ai_bias = sc_2~load_int(257);
+    slice sc_3 = sc_2~load_ref().begin_parse();
+    var v'neural = sc_3~$NeuralState$_load();
+    var v'is_frozen = sc_3~load_int(1);
+    return (sc_0, (v'owner, v'jetton_content, v'total_supply, v'total_staked, v'reserve_fund, v'defi, v'market_entropy, v'ai_bias, v'neural, v'is_frozen));
+}
+
+(slice, ((slice, slice))) $JettonMaster$init$_load(slice sc_0) inline {
+    var v'owner = sc_0~load_msg_addr();
+    var v'content_url = sc_0~load_ref().begin_parse();
+    return (sc_0, (v'owner, v'content_url));
+}
+
+(slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $JettonMaster$_contract_load() impure inline {
+    slice $sc = get_data().begin_parse();
+    int $loaded = $sc~load_int(1);
+    if ($loaded) {
+        return $sc~$JettonMaster$_load();
+    }
+    else {
+        (slice $owner, slice $content_url) = $sc~$JettonMaster$init$_load();
+        $sc.end_parse();
+        return $JettonMaster$_contract_init($owner, $content_url);
+    }
+}
+
+() $JettonMaster$_contract_store((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) v) impure inline {
+    builder b = begin_cell();
+    b = b.store_int(true, 1);
+    b = $JettonMaster$_store(b, v);
+    set_data(b.end_cell());
+}
+
+;;
+;; Type: JettonWallet
+;; TLB: _ balance:coins owner:address master:address last_interaction:int257 = JettonWallet
+;;
+
+builder $JettonWallet$init$_store(builder build_0, (slice, slice) v) inline {
+    var (v'master, v'owner) = v;
+    build_0 = build_0.store_slice(v'master);
+    build_0 = build_0.store_slice(v'owner);
+    return build_0;
+}
+
+cell $JettonWallet$_child_get_code() impure asm """
+    B{b5ee9c7201020a0100028d000228ff008e88f4a413f4bcf2c80bed5320e303ed43d901020157a65ec0bb513434800067fe803e903e9020404075c0154c1b05273e903e901640b4405c3e08c4f8b6cf1b11600302f83001d072d721d200d200fa4021103450666f04f86102f862ed44d0d200019ffa00fa40fa40810101d70055306c149cfa40fa405902d10170f82313e205925f05e003d70d1ff2e082218210f8c7a650bae302018210178d4519ba8e20d33f31fa003012a05023c87f01ca0055305043fa02ce12ce810101cf00c9ed54040501185312db3c307025544530255908017231d33ffa00fa40fa40f40431fa008200c13df84228c705f2f41079106810675504db3cc87f01ca0055305043fa02ce12ce810101cf00c9ed5406000ce05f05f2c08202f625aa018103e8a90451a6a15286db3c705920f90022f9005ad76501d76582020134c8cb17cb0fcb0fcbffcbff71f90400c87401cb0212ca07cbffc9d0821005f5e10072518ca154323b48135076c855508210178d45195007cb1f15cb3f5003fa02cece01fa02cec941505a6d6d40037fc8cf8580ca00cf8440ce01080702f4fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb008d0860061c0dec0a667c5051cf69d42907570f2cb7cf76e50d50955c561d11924a9fbc245240db3c705920f90022f9005ad76501d76582020134c8cb17cb0fcb0fcbffcbff71f90400c87401cb0212ca07cbffc9d008090018f82ac87001ca005a02cecec900cc821005f5e10072708b08291047103b544a30c855508210178d45195007cb1f15cb3f5003fa02cece01fa02cec94330175a6d6d40037fc8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00} B>boc PUSHREF
+""";
+
+(cell, cell) $JettonWallet$_init_child(slice $master, slice $owner) inline_ref {
+    ;; Build init code cell
+
+    ;; Contract Code: JettonWallet
+    cell init_code = $JettonWallet$_child_get_code();
+
+
+    builder b = begin_cell();
+    b = b.store_int(false, 1);
+    b = $JettonWallet$init$_store(b, ($master, $owner));
+    return (init_code, b.end_cell());
+}
+
+;;
+;; Contract JettonMaster functions
+;;
+
+(slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $JettonMaster$_contract_init(slice $owner, slice $content_url) impure inline {
+    var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = (null(), null(), null(), 0, 0, $DeFiParams$_constructor_apr_total_locked_last_update_synapse_depth_liquidity_ratio_ai_risk_score(500, 0, 0, 100, 2000, 0), 100, 1000, $NeuralState$_constructor_history_hash_evolution_cycles_threat_level_policy_weight_last_tx_time_mutation_seed_memory_bank(93425221564777052312547156632767519476422384225883353702068648528814168237530, 0, 0, 100, 0, 7, 0), false);
+    $self'owner = $owner;
+    $self'total_supply = 100000000000000000000;
+    $self'jetton_content = $Builder$_fun_endCell($Builder$_fun_storeSlice(store_uint($global_beginCell(), 0, 8), $String$_fun_asSlice($content_url)));
+    $self'defi'last_update = $global_now();
+    $self'neural'last_tx_time = $global_now();
+    return ($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen);
+}
+
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), ()) $JettonMaster$_fun_evolve((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref {
+    var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
+    if ((($global_now() - $self'neural'last_tx_time) > 86400)) {
+        $self'is_frozen = true;
+    }
+    if (($self'market_entropy > 500)) {
+        $self'neural'memory_bank = (($self'neural'memory_bank + 1) % 100);
+        $self'neural'threat_level = $global_min(100, ($self'neural'threat_level + 5));
+    } else {
+        $self'neural'threat_level = $global_max(0, ($self'neural'threat_level - 2));
+    }
+    int $predicted_risk = (($self'neural'memory_bank * 2) + ($self'market_entropy / 20));
+    $self'defi'ai_risk_score = $global_min(100, $predicted_risk);
+    int $intelligence_factor = ($self'neural'policy_weight / 5);
+    $self'defi'apr = (((($self'ai_bias / 10) * (100 - $self'defi'ai_risk_score)) / 100) + $intelligence_factor);
+    $self'neural'mutation_seed = (($self'neural'mutation_seed * 93425221564777052312547156632767519476422384225883353702068648528814168237530) % 1000000);
+    $self'neural'evolution_cycles = $self'neural'evolution_cycles + 1;
+    $self'neural'last_tx_time = $global_now();
+    $self'defi'last_update = $global_now();
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), ());
+}
+
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), (int, int, int, int, int, int)) $JettonMaster$_fun_get_vital_signs((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref {
+    var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
+    var $fresh$ret_5 = ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score);
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_5);
+}
+
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), (int, int, int, int, int, int, int)) $JettonMaster$_fun_get_neural_profile((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref {
+    var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
+    var $fresh$ret_6 = ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank);
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_6);
+}
+
+((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), slice) $JettonMaster$_fun_get_wallet_address((slice, cell, int, int, int, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self, slice $owner_address) impure inline_ref {
+    var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
+    var $fresh$ret_7 = $global_contractAddress($JettonWallet$_init_child($global_myAddress(), $owner_address));
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_7);
+}
+
+;;
+;; Get methods of a Contract JettonMaster
+;;
+
+_ %get_vital_signs() method_id(118385) {
+    var self = $JettonMaster$_contract_load();
+    var res = self~$JettonMaster$_fun_get_vital_signs();
+    return $DeFiParams$_to_external(res);
+}
+
+_ %get_neural_profile() method_id(69594) {
+    var self = $JettonMaster$_contract_load();
+    var res = self~$JettonMaster$_fun_get_neural_profile();
+    return $NeuralState$_to_external(res);
+}
+
+_ %get_wallet_address(slice $owner_address) method_id(103289) {
+    slice $owner_address = $owner_address;
+    var self = $JettonMaster$_contract_load();
+    var res = self~$JettonMaster$_fun_get_wallet_address($owner_address);
+    return res;
+}
+
+_ %owner() method_id(83229) {
+    var self = $JettonMaster$_contract_load();
+    var res = self~$JettonMaster$_fun_owner();
+    return res;
+}
+
+;;
+;; Routing of a Contract JettonMaster
+;;
+
+;; message opcode reader utility: only binary receivers
+;; Returns 32 bit message opcode, otherwise throws the "Invalid incoming message" exit code
+(slice, int) ~load_opcode_internal(slice s) asm( -> 1 0) "32 LDUQ 130 THROWIFNOT";
+
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    
+    ;; Context
+    var cs = in_msg_cell.begin_parse();
+    cs~skip_bits(2);
+    var msg_bounceable = cs~load_int(1);
+    var msg_bounced = cs~load_int(1);
+    slice msg_sender_addr = cs~load_msg_addr();
+    __tact_context = (msg_bounceable, msg_sender_addr, msg_value, cs);
+    __tact_context_sender = msg_sender_addr;
+    
+    ;; Load contract data
+    var ($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen) = $JettonMaster$_contract_load();
+    
+    ;; Handle bounced messages
+    if (msg_bounced) { return (); }
+    var op = in_msg~load_opcode_internal();
+    ;; Receive CognitiveFeedback message
+    if (op == 3379491826) {
+        var $msg'strategy_shift = in_msg~load_int(257);
+        var $msg'confidence_level = in_msg~load_int(257);
+        ($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)~$JettonMaster$_fun_requireOwner();
+        $self'neural'policy_weight = $global_max(10, $global_min(1000, ($self'neural'policy_weight + $msg'strategy_shift)));
+        $self'ai_bias = $global_max(100, $global_min(5000, ($self'ai_bias + $msg'confidence_level)));
+        ($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)~$JettonMaster$_fun_evolve();
+        $JettonMaster$_contract_store(($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen));
+        return ();
+    }
+    
+    ;; Receive NeuralCommand message
+    if (op == 2735106208) {
+        var $msg'market_entropy_adj = in_msg~load_int(257);
+        var $msg'ai_bias_adjustment = in_msg~load_int(257);
+        var $msg'emergency_freeze = in_msg~load_int(1);
+        ($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)~$JettonMaster$_fun_requireOwner();
+        $self'market_entropy = $global_max(0, $global_min(1000, ($self'market_entropy + $msg'market_entropy_adj)));
+        $self'is_frozen = $msg'emergency_freeze;
+        ($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)~$JettonMaster$_fun_evolve();
+        $JettonMaster$_contract_store(($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen));
+        return ();
+    }
+    
+    ;; Receive Stake message
+    if (op == 3203459332) {
+        var $msg'amount = in_msg~load_varuint16();
+        throw_unless(31617, (~ $self'is_frozen));
+        var ($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw) = __tact_context_get();
+        throw_unless(10237, ($ctx'value >= 500000000));
+        $self'total_staked = $self'total_staked + $msg'amount;
+        $self'defi'total_locked = $self'defi'total_locked + $ctx'value;
+        $self'reserve_fund = $self'reserve_fund + (($ctx'value * (100 - ($self'ai_bias / 50))) / 100);
+        ($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)~$JettonMaster$_fun_evolve();
+        $JettonMaster$_contract_store(($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen));
+        return ();
+    }
+    
+    ;; Receive Unstake message
+    if (op == 4284693473) {
+        var $msg'amount = in_msg~load_varuint16();
+        throw_unless(53619, ($self'defi'ai_risk_score < 60));
+        throw_unless(51754, ($self'total_staked >= $msg'amount));
+        $self'total_staked = $self'total_staked - $msg'amount;
+        $self'defi'total_locked = $self'defi'total_locked - $msg'amount;
+        ($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)~$JettonMaster$_fun_evolve();
+        $global_send($SendParameters$_constructor_to_value_mode_bounce(__tact_context_get_sender(), 0, 64, false));
+        $JettonMaster$_contract_store(($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen));
+        return ();
+    }
+    
+    ;; Receive Deploy message
+    if (op == 0x946a98b6) {
+        var $deploy'queryId = in_msg~load_uint(64);
+        ($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)~$JettonMaster$_fun_notify($DeployOk$_store_cell($DeployOk$_constructor_queryId($deploy'queryId), begin_cell()));
+        $JettonMaster$_contract_store(($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen));
+        return ();
+    }
+    
+    ;; Throw if not handled
+    throw(130);
+}
+
+
+() __tact_selector_hack_asm() impure asm """
+@atend @ 1 {
+        execute current@ context@ current!
+        {
+            // The core idea of this function is to save gas by avoiding unnecessary dict jump, when recv_internal/recv_external is called
+            // We want to extract recv_internal/recv_external from the dict and select needed function
+            // not by jumping to the needed function by it's index, but by using usual IF statements.
+
+            }END> b> // Close previous builder, now we have a cell of previous code on top of the stack
+
+            <{ // Start of the new code builder
+                SETCP0
+                // Swap the new code builder with the previous code, now we have previous code on top of the stack
+                swap
+                // Transform cell to slice and load first ref from the previous code, now we have the dict on top of the stack
+                <s ref@
+
+                // Extract the recv_internal from the dict
+                dup 0 swap @procdictkeylen idict@ { "internal shortcut error" abort } ifnot
+                swap
+
+                // Delete the recv_internal from the dict
+                0 swap @procdictkeylen idict- drop
+                // Delete the recv_external from the dict (it's okay if it's not there)
+                -1 swap @procdictkeylen idict- drop
+                // Delete the __tact_selector_hack from the dict
+                65535 swap @procdictkeylen idict- drop
+
+                // Bring the code builder from the bottom of the stack
+                // because if recv_external extraction is optional, and the number of elements on the stack is not fixed
+                depth 1- roll
+                // Swap with the dict from which we extracted recv_internal and (maybe) recv_external
+                swap
+
+                // Check if the dict is empty
+                dup null?
+                // Store a copy of this flag in the bottom of the stack
+                dup depth 1- -roll
+                {
+                    // If the dict is empty, just drop it (it will be null if it's empty)
+                    drop
+                }
+                {
+                    // If the dict is not empty, prepare continuation to be stored in c3
+                    <{
+                        // Save this dict as first ref in this continuation, it will be pushed in runtime by DICTPUSHCONST
+                        swap @procdictkeylen DICTPUSHCONST
+                        // Jump to the needed function by it's index
+                        DICTIGETJMPZ
+                        // If such key is not found, throw 11 along with the key as an argument
+                        11 THROWARG
+                    }> PUSHCONT
+                    // Store the continuation in c3
+                    c3 POP
+                } cond
+
+                // Function id is on top of the (runtime) stack
+                DUP IFNOTJMP:<{
+                    // place recv_internal here
+                    DROP swap @addop
+                }>
+
+                // Bring back the flag, indicating if the dict is empty or not from the bottom of the stack
+                depth 1- roll
+                {
+                    // If the dict is empty, throw 11
+                    11 THROWARG
+                }
+                {
+                    // If the dict is not empty, jump to continuation from c3
+                    c3 PUSH JMPX
+                } cond
+            }> b>
+        } : }END>c
+        current@ context! current!
+    } does @atend !
+""";
+
+() __tact_selector_hack() method_id(65535) {
+    return __tact_selector_hack_asm();
+}

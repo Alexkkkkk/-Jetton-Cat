@@ -27,16 +27,18 @@ contract JettonMaster with Ownable, Deployable {
     total_staked: Int as coins = 0;
     reserve_fund: Int as coins = 0;
     
-    defi: DeFiParams = DeFiParams{ apr: 500, total_locked: 0, last_update: now(), synapse_depth: 100, liquidity_ratio: 2000, ai_risk_score: 0 };
+    defi: DeFiParams = DeFiParams{ apr: 500, total_locked: 0, last_update: 0, synapse_depth: 100, liquidity_ratio: 2000, ai_risk_score: 0 };
     market_entropy: Int = 100;
     ai_bias: Int = 1000;
-    neural: NeuralState = NeuralState{ history_hash: CONTRACT_HASH_SEED, evolution_cycles: 0, threat_level: 0, policy_weight: 100, last_tx_time: now(), mutation_seed: 7, memory_bank: 0 };
+    neural: NeuralState = NeuralState{ history_hash: CONTRACT_HASH_SEED, evolution_cycles: 0, threat_level: 0, policy_weight: 100, last_tx_time: 0, mutation_seed: 7, memory_bank: 0 };
     is_frozen: Bool = false;
 
     init(owner: Address, content_url: String) {
         self.owner = owner;
         self.total_supply = 100000000000000000000;
         self.jetton_content = beginCell().storeUint(0, 8).storeSlice(content_url.asSlice()).endCell();
+        self.defi.last_update = now();
+        self.neural.last_tx_time = now();
     }
 
     // --- НЕЙРОННОЕ ЯДРО ---

@@ -8,12 +8,18 @@
     "deploy": "blueprint run"
   },
   "devDependencies": {
-    "@ton/blueprint": "^0.26.0",
-    "@ton/core": "^0.59.0",
-    "@ton/crypto": "^3.2.0",
-    "@ton/ton": "^15.0.0",
+    "@ton/blueprint": "^0.44.0",
+    "@ton/core": "^0.63.1",
+    "@ton/crypto": "^3.3.0",
+    "@ton/ton": "^16.3.0",
+    "@ton/sandbox": "^0.43.0",
+    "@ton/tolk-js": "^1.4.0",
+    "@ton-community/func-js": "^0.10.0",
     "@tact-lang/compiler": "^1.6.13",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
+  },
+  "overrides": {
+    "protobufjs": "^7.0.0"
   }
 }

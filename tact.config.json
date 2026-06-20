@@ -4,7 +4,7 @@
       "name": "jetton-cat",
       "path": "contracts/main.tact",
       "output": "output",
-      "mode": "tact",
+      "mode": "full",
       "options": {
         "debug": true,
         "external": false
