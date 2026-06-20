@@ -27,7 +27,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "echo 'jetton-cat' | npm run build"
+args = "npx blueprint run deployContract"
 
 [deployment]
 deploymentTarget = "vm"
@@ -38,3 +38,4 @@ build = ["npm", "run", "build"]
 
 [userenv.shared]
 NETWORK_TYPE = "mainnet"
+WALLET_VERSION = "v4"
