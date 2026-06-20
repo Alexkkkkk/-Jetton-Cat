@@ -33,3 +33,8 @@ args = "echo 'jetton-cat' | npm run build"
 deploymentTarget = "vm"
 run = ["node", "-e", "console.log('jetton-cat: TON smart contract project. Run npm run build to compile contracts.')"]
 build = ["npm", "run", "build"]
+
+[userenv]
+
+[userenv.shared]
+NETWORK_TYPE = "testnet"
