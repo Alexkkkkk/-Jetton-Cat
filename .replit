@@ -27,7 +27,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npx blueprint run deployContract"
+args = "npx blueprint run deployContract --mnemonic"
 
 [deployment]
 deploymentTarget = "vm"
