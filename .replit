@@ -37,4 +37,4 @@ build = ["npm", "run", "build"]
 [userenv]
 
 [userenv.shared]
-NETWORK_TYPE = "testnet"
+NETWORK_TYPE = "mainnet"
