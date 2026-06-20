@@ -74,9 +74,14 @@ async function run() {
     const master = Address.parse(process.env.MASTER_ADDRESS!);
 
     try {
-        const res = await client.runMethod(master, "get_neural_report");
-        const health = res.stack.readNumber();
-        const reserve = res.stack.readBigNumber();
+        const res = await client.runMethod(master, "get_vital_signs");
+        const apr = res.stack.readNumber();
+        const total_locked = res.stack.readBigNumber();
+        const last_update = res.stack.readNumber();
+        const synapse_depth = res.stack.readNumber();
+        const liquidity_ratio = res.stack.readNumber();
+        const health = res.stack.readNumber(); // ai_risk_score
+        const reserve = total_locked;
 
         AI_AGENT.log(`📊 Статус: Health=${health}, Reserve=${fromNano(reserve)} TON`);
 
