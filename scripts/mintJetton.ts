@@ -1,113 +1,121 @@
-import { toNano, Address, beginCell } from '@ton/core';
-import { JettonMaster } from '../output/jetton-cat_JettonMaster'; // Убедитесь, что путь к билду верный
-import { NetworkProvider } from '@ton/blueprint';
-import * as fs from 'fs';
+import "dotenv/config";
+import { TonClient, Address, beginCell, toNano, fromNano, WalletContractV4, internal } from "@ton/ton";
+import { mnemonicToPrivateKey } from "@ton/crypto";
+import { JettonMaster } from "../output/jetton-cat_JettonMaster";
+import * as fs from "fs";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export async function run(provider: NetworkProvider) {
-    const ui = provider.ui();
-    const sender = provider.sender();
-    const network = provider.network();
+async function main() {
+    // --- Config ---
+    const cfg = JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
+    const masterAddress = Address.parse(cfg.masterAddress || process.env.MASTER_ADDRESS!);
+    const network = cfg.network || "mainnet";
 
-    // --- Hardcoded Mainnet Master Address ---
-    // Это адрес вашего задеплоенного контракта
-    const MASTER_ADDRESS = 'EQDiH9R1w_hy7zMzs-FHNjLWkKGOjYV_SFTiLCTnONEI5f2c';
-    const masterAddress = Address.parse(MASTER_ADDRESS);
+    const MINT_TO = process.env.MINT_TO;
+    const MINT_AMOUNT = process.env.MINT_AMOUNT;
 
-    ui.write(`\n🐱 NeuroJetton Mint Tool`);
-    ui.write(`🌍 Network   : ${network.toUpperCase()}`);
-    ui.write(`📋 Master    : ${masterAddress.toString()}`);
-    ui.write(`🔗 TONScan   : https://${network === 'testnet' ? 'testnet.' : ''}tonscan.org/address/${masterAddress.toString()}\n`);
-
-    // --- Destination address ---
-    let destRaw = process.env.MINT_TO || '';
-    if (!destRaw) {
-        destRaw = await ui.input('📬 Destination wallet address (who receives the tokens):');
+    if (!MINT_TO) {
+        console.error("❌  MINT_TO env var is required (destination TON address)");
+        console.error("    Example: MINT_TO=EQ... MINT_AMOUNT=1000 npx ts-node scripts/mintJetton.ts");
+        process.exit(1);
     }
-    
-    let destination: Address;
-    try {
-        destination = Address.parse(destRaw.trim());
-    } catch {
-        ui.write('❌ Invalid address format. Aborting.');
-        return;
+    if (!MINT_AMOUNT || isNaN(parseFloat(MINT_AMOUNT)) || parseFloat(MINT_AMOUNT) <= 0) {
+        console.error("❌  MINT_AMOUNT env var is required (positive number, e.g. 1000)");
+        process.exit(1);
+    }
+    if (!process.env.OWNER_MNEMONIC) {
+        console.error("❌  OWNER_MNEMONIC env var is required");
+        process.exit(1);
     }
 
-    // --- Amount ---
-    let amountRaw = process.env.MINT_AMOUNT || '';
-    if (!amountRaw) {
-        amountRaw = await ui.input('💎 Amount of PLSH tokens to mint (e.g. 1000):');
-    }
+    const destination = Address.parse(MINT_TO);
+    const amount = toNano(MINT_AMOUNT);
+    const amountHuman = parseFloat(MINT_AMOUNT).toLocaleString();
 
-    const amountNum = parseFloat(amountRaw.trim());
-    if (isNaN(amountNum) || amountNum <= 0) {
-        ui.write('❌ Invalid amount. Aborting.');
-        return;
-    }
-    // Конвертация с учетом 9 знаков после запятой
-    const amount = toNano(amountRaw.trim());
+    // --- TON Client ---
+    const client = new TonClient({
+        endpoint: "https://toncenter.com/api/v2/jsonRPC",
+        apiKey: process.env.TONCENTER_API_KEY,
+    });
+
+    console.log(`\n🐱  NeuroJetton Mint`);
+    console.log(`🌍  Network  : ${network.toUpperCase()}`);
+    console.log(`📋  Master   : ${masterAddress.toString()}`);
+    console.log(`📬  To       : ${destination.toString()}`);
+    console.log(`💎  Amount   : ${amountHuman} PLSH\n`);
 
     // --- Resolve JettonWallet address ---
-    ui.write('\n⏳ Resolving JettonWallet address...');
-    const master = provider.open(JettonMaster.fromAddress(masterAddress));
-
+    console.log("⏳  Resolving JettonWallet address...");
+    const master = client.open(JettonMaster.fromAddress(masterAddress));
     let walletAddress: Address;
     try {
         walletAddress = await master.getGetWalletAddress(destination);
     } catch (e: any) {
-        ui.write(`❌ Failed to call get_wallet_address: ${e.message}`);
-        return;
+        console.error(`❌  get_wallet_address failed: ${e.message}`);
+        process.exit(1);
     }
+    console.log(`✅  JettonWallet : ${walletAddress.toString()}`);
 
-    ui.write(`✅ JettonWallet : ${walletAddress.toString()}`);
-    ui.write(`💰 Minting      : ${amountNum.toLocaleString()} PLSH → ${destination.toString()}\n`);
+    // --- Build wallet from mnemonic ---
+    const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC!.split(" "));
+    const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
+    const walletContract = client.open(wallet);
 
-    // --- Confirm ---
-    const confirm = await ui.input('Proceed? (yes / no):');
-    if (confirm.trim().toLowerCase() !== 'yes') {
-        ui.write('🚫 Aborted by user.');
-        return;
+    const balance = await walletContract.getBalance();
+    console.log(`💰  Owner balance : ${fromNano(balance)} TON`);
+
+    if (balance < toNano("0.1")) {
+        console.error("❌  Insufficient TON balance (need at least 0.1 TON for gas)");
+        process.exit(1);
     }
 
     // --- Build TokenTransferInternal (opcode 0x178d4519) ---
-    const queryId = BigInt(Date.now());
     const body = beginCell()
         .storeUint(0x178d4519, 32)
-        .storeUint(queryId, 64)
+        .storeUint(BigInt(Date.now()), 64)
         .storeCoins(amount)
-        .storeAddress(sender.address!)
-        .storeAddress(sender.address!)
+        .storeAddress(wallet.address)
+        .storeAddress(wallet.address)
         .storeCoins(0n)
         .storeBit(0)
         .endCell();
 
-    // --- Send transaction ---
-    ui.write('🚀 Sending mint transaction...');
-    const GAS = toNano('0.05'); // Газ для транзакции
+    // --- Send with retry on rate-limit ---
+    console.log("\n🚀  Sending mint transaction...");
+    const seqno = await walletContract.getSeqno();
 
-    let sent = false;
     for (let attempt = 1; attempt <= 5; attempt++) {
         try {
-            await sender.send({ to: walletAddress, value: GAS, body, bounce: false });
-            sent = true;
+            await walletContract.sendTransfer({
+                seqno,
+                secretKey: keyPair.secretKey,
+                messages: [internal({ to: walletAddress, value: toNano("0.05"), body, bounce: false })],
+            });
             break;
         } catch (e: any) {
-            const is429 = e?.message?.includes('429') || (e?.cause?.message || '').includes('429');
+            const is429 = e?.message?.includes("429") || (e?.cause?.message || "").includes("429");
             if (is429 && attempt < 5) {
                 const wait = attempt * 15000;
-                ui.write(`⚠️ Rate limit (429). Waiting ${wait / 1000}s... (${attempt}/5)`);
+                console.log(`⚠️   Rate limit. Waiting ${wait / 1000}s... (${attempt}/5)`);
                 await sleep(wait);
             } else {
-                ui.write(`❌ Transaction failed: ${e.message}`);
-                return;
+                console.error(`❌  Transaction failed: ${e.message}`);
+                process.exit(1);
             }
         }
     }
 
-    if (sent) {
-        ui.write('\n✅ Mint transaction sent!');
-        ui.write('--------------------------------------------------');
-        ui.write(`🔗 TONScan: https://${network === 'testnet' ? 'testnet.' : ''}tonscan.org/address/${walletAddress.toString()}`);
-    }
+    const tonscan = `https://${network === "testnet" ? "testnet." : ""}tonscan.org/address/${walletAddress.toString()}`;
+
+    console.log("\n✅  Mint transaction sent!");
+    console.log("--------------------------------------------------");
+    console.log(`💎  Amount    : ${amountHuman} PLSH`);
+    console.log(`📬  Recipient : ${destination.toString()}`);
+    console.log(`🏦  Wallet    : ${walletAddress.toString()}`);
+    console.log(`🔗  TONScan   : ${tonscan}`);
+    console.log("--------------------------------------------------");
+    console.log("💡  Balance updates once confirmed (~5–15s on mainnet).");
 }
+
+main().catch(e => { console.error(e); process.exit(1); });
