@@ -2,6 +2,7 @@ import { Router } from "express";
 import { TonClient, Address, fromNano, beginCell, internal, WalletContractV4, toNano } from "@ton/ton";
 import { mnemonicToPrivateKey } from "@ton/crypto";
 import { JettonMaster } from "../output/jetton-cat_JettonMaster";
+import { JettonWallet } from "../output/jetton-cat_JettonWallet";
 import { db } from "./db";
 import { mintTransactions } from "../shared/models/auth";
 import { desc } from "drizzle-orm";
@@ -103,9 +104,14 @@ adminRoutes.post("/mint", async (req, res) => {
         const client = getClient();
         const masterAddress = Address.parse(getMasterAddress());
 
-        // Resolve the JettonWallet address via on-chain getter
+        // Resolve the JettonWallet address + stateInit for inactive wallets
         const master = client.open(JettonMaster.fromAddress(masterAddress));
         const walletAddress = await master.getGetWalletAddress(destAddress);
+
+        // Deploy wallet contract alongside the first mint if it's inactive
+        const walletState = await client.provider(walletAddress).getState();
+        const isDeployed = walletState.state.type === "active";
+        const stateInit = isDeployed ? undefined : await JettonWallet.init(masterAddress, destAddress);
 
         // Build TokenTransferInternal (opcode 0x178d4519)
         const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC!.split(" "));
@@ -126,7 +132,7 @@ adminRoutes.post("/mint", async (req, res) => {
         await walletContract.sendTransfer({
             seqno,
             secretKey: keyPair.secretKey,
-            messages: [internal({ to: walletAddress, value: toNano("0.1"), body, bounce: false })],
+            messages: [internal({ to: walletAddress, value: toNano("0.1"), body, bounce: false, init: stateInit })],
         });
 
         await db.insert(mintTransactions).values({

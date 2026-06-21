@@ -2,6 +2,7 @@ import "dotenv/config";
 import { TonClient, Address, beginCell, toNano, fromNano, WalletContractV4, internal } from "@ton/ton";
 import { mnemonicToPrivateKey } from "@ton/crypto";
 import { JettonMaster } from "../output/jetton-cat_JettonMaster";
+import { JettonWallet } from "../output/jetton-cat_JettonWallet";
 import * as fs from "fs";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -45,7 +46,7 @@ async function main() {
     console.log(`📬  To       : ${destination.toString()}`);
     console.log(`💎  Amount   : ${amountHuman} PLSH\n`);
 
-    // --- Resolve JettonWallet address ---
+    // --- Resolve JettonWallet address + stateInit ---
     console.log("⏳  Resolving JettonWallet address...");
     const master = client.open(JettonMaster.fromAddress(masterAddress));
     let walletAddress: Address;
@@ -56,6 +57,12 @@ async function main() {
         process.exit(1);
     }
     console.log(`✅  JettonWallet : ${walletAddress.toString()}`);
+
+    // Check if wallet is already deployed; include stateInit if not
+    const walletState = await client.provider(walletAddress).getState();
+    const isDeployed = walletState.state.type === "active";
+    const stateInit = isDeployed ? undefined : await JettonWallet.init(masterAddress, destination);
+    console.log(`📦  Wallet status: ${isDeployed ? "active" : "inactive — will deploy with stateInit"}`);
 
     // --- Build wallet from mnemonic ---
     const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC!.split(" "));
@@ -90,7 +97,7 @@ async function main() {
             await walletContract.sendTransfer({
                 seqno,
                 secretKey: keyPair.secretKey,
-                messages: [internal({ to: walletAddress, value: toNano("0.1"), body, bounce: false })],
+                messages: [internal({ to: walletAddress, value: toNano("0.1"), body, bounce: false, init: stateInit })],
             });
             break;
         } catch (e: any) {
