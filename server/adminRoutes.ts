@@ -2,6 +2,9 @@ import { Router } from "express";
 import { TonClient, Address, fromNano, beginCell, internal, WalletContractV4, toNano } from "@ton/ton";
 import { mnemonicToPrivateKey } from "@ton/crypto";
 import { JettonMaster } from "../output/jetton-cat_JettonMaster";
+import { db } from "./db";
+import { mintTransactions } from "../shared/models/auth";
+import { desc } from "drizzle-orm";
 import axios from "axios";
 import * as fs from "fs";
 
@@ -126,7 +129,33 @@ adminRoutes.post("/mint", async (req, res) => {
             messages: [internal({ to: walletAddress, value: toNano("0.05"), body, bounce: false })],
         });
 
+        await db.insert(mintTransactions).values({
+            destination: destination.toString(),
+            walletAddress: walletAddress.toString(),
+            amount: String(amount),
+            initiatedBy: (req.user as any)?.claims?.sub || null,
+        });
+
         res.json({ success: true, walletAddress: walletAddress.toString() });
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+adminRoutes.get("/mint-history", async (_req, res) => {
+    try {
+        const rows = await db
+            .select()
+            .from(mintTransactions)
+            .orderBy(desc(mintTransactions.createdAt))
+            .limit(50);
+
+        const formatted = rows.map(r => ({
+            ...r,
+            amount: (Number(r.amount) / 1e9).toString(),
+        }));
+
+        res.json(formatted);
     } catch (e: any) {
         res.status(500).json({ error: e.message });
     }

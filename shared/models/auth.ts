@@ -23,3 +23,15 @@ export const users = pgTable("users", {
 
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+export const mintTransactions = pgTable("mint_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  destination: varchar("destination").notNull(),
+  walletAddress: varchar("wallet_address").notNull(),
+  amount: varchar("amount").notNull(),
+  initiatedBy: varchar("initiated_by"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type MintTransaction = typeof mintTransactions.$inferSelect;
+export type InsertMintTransaction = typeof mintTransactions.$inferInsert;

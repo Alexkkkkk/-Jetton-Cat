@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { StatCard } from "../components/StatCard";
 import { NeuralCommandPanel } from "../components/NeuralCommandPanel";
 import { MintPanel } from "../components/MintPanel";
+import { MintHistory } from "../components/MintHistory";
 import { LogPanel } from "../components/LogPanel";
 
 interface DashboardProps {
@@ -136,6 +137,10 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
 
             <div style={{ marginBottom: 24 }}>
               <LogPanel logs={logs} />
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <MintHistory />
             </div>
 
             <div style={{

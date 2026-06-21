@@ -27,6 +27,14 @@ async function ensureTables() {
                 created_at TIMESTAMP DEFAULT NOW(),
                 updated_at TIMESTAMP DEFAULT NOW()
             );
+            CREATE TABLE IF NOT EXISTS mint_transactions (
+                id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+                destination VARCHAR NOT NULL,
+                wallet_address VARCHAR NOT NULL,
+                amount VARCHAR NOT NULL,
+                initiated_by VARCHAR,
+                created_at TIMESTAMP DEFAULT NOW()
+            );
         `);
         console.log("[DB] Tables ready.");
     } catch (e) {
