@@ -2,6 +2,7 @@ modules = ["nodejs-20"]
 [agent]
 expertMode = true
 stack = "BEST_EFFORT_FALLBACK"
+integrations = ["javascript_log_in_with_replit:2.0.0", "javascript_database:1.0.0"]
 
 [nix]
 channel = "stable-25_05"
@@ -21,6 +22,10 @@ args = "Start application"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "AI Monitor"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Admin Panel"
 
 [[workflows.workflow]]
 name = "Start application"
@@ -44,6 +49,18 @@ args = "npx ts-node --transpile-only scripts/aiMonitor.ts"
 [workflows.workflow.metadata]
 outputType = "console"
 
+[[workflows.workflow]]
+name = "Admin Panel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npx ts-node --transpile-only server/index.ts"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [deployment]
 deploymentTarget = "vm"
 run = ["node", "-e", "console.log('jetton-cat: TON smart contract project. Run npm run build to compile contracts.')"]
@@ -54,3 +71,7 @@ build = ["npm", "run", "build"]
 [userenv.shared]
 NETWORK_TYPE = "mainnet"
 WALLET_VERSION = "v4"
+
+[[ports]]
+localPort = 5000
+externalPort = 80

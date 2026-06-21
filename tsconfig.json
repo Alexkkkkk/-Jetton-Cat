@@ -10,7 +10,7 @@
     "rootDir": ".",
     "resolveJsonModule": true
   },
-  "include": ["scripts", "contracts"],
+  "include": ["scripts", "contracts", "server"],
   "exclude": ["node_modules", "dist"],
   "ts-node": {
     "transpileOnly": true,
