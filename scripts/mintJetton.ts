@@ -90,7 +90,7 @@ async function main() {
             await walletContract.sendTransfer({
                 seqno,
                 secretKey: keyPair.secretKey,
-                messages: [internal({ to: walletAddress, value: toNano("0.05"), body, bounce: false })],
+                messages: [internal({ to: walletAddress, value: toNano("0.1"), body, bounce: false })],
             });
             break;
         } catch (e: any) {
