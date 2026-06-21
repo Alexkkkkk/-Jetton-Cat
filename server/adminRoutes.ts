@@ -4,6 +4,11 @@ import { mnemonicToPrivateKey } from "@ton/crypto";
 import axios from "axios";
 import * as fs from "fs";
 
+function getMasterAddress(): string {
+    const config = JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
+    return config.masterAddress || process.env.MASTER_ADDRESS!;
+}
+
 export const adminRoutes = Router();
 
 function getClient() {
@@ -16,7 +21,7 @@ function getClient() {
 adminRoutes.get("/stats", async (_req, res) => {
     try {
         const client = getClient();
-        const master = Address.parse(process.env.MASTER_ADDRESS!);
+        const master = Address.parse(getMasterAddress());
 
         const state = await client.provider(master).getState();
         const balance = fromNano(state.balance);
@@ -55,7 +60,7 @@ adminRoutes.post("/neural-command", async (req, res) => {
     try {
         const { freeze, enableArbitrage, minMint } = req.body;
         const client = getClient();
-        const master = Address.parse(process.env.MASTER_ADDRESS!);
+        const master = Address.parse(getMasterAddress());
         const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC!.split(" "));
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);

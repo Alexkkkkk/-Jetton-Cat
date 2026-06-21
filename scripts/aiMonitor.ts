@@ -6,6 +6,8 @@ import * as fs from 'fs';
 
 const config = JSON.parse(fs.readFileSync('./contract_config.json', 'utf-8'));
 
+const MASTER_ADDRESS = config.masterAddress || process.env.MASTER_ADDRESS;
+
 const AI_AGENT = {
     log: (msg: string) => console.log(`[${new Date().toISOString()}] [AI-ORCHESTRATOR]: ${msg}`),
     
@@ -71,7 +73,7 @@ async function run() {
         endpoint: "https://toncenter.com/api/v2/jsonRPC", 
         apiKey: process.env.TONCENTER_API_KEY 
     });
-    const master = Address.parse(process.env.MASTER_ADDRESS!);
+    const master = Address.parse(MASTER_ADDRESS);
 
     try {
         const res = await client.runMethod(master, "get_vital_signs");
