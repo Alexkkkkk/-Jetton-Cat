@@ -19,11 +19,11 @@ export async function run(provider: NetworkProvider) {
 
     AI_AGENT.log(`Инициализация деплоя в ${network}...`);
 
-    // Serve metadata from this Replit app for reliability (correct 0x01 off-chain prefix)
-    const replitDomain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0];
-    const metadataUrl = replitDomain
-        ? `https://${replitDomain}/metadata.json`
-        : "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json";
+    // Use METADATA_URL env var if set (recommended: your published *.replit.app domain)
+    // Otherwise fall back to the GitHub raw URL (stable, always accessible)
+    const metadataUrl = process.env.METADATA_URL
+        || "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json";
+    ui.write(`📄 Metadata URL: ${metadataUrl}`);
 
     const jettonMaster = provider.open(
         await JettonMaster.fromInit(sender.address!, metadataUrl)
