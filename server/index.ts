@@ -49,6 +49,13 @@ async function main() {
 
     app.use("/api/admin", isAuthenticated, adminRoutes);
 
+    // Public metadata endpoint — readable by TON wallets and explorers (no auth, CORS open)
+    app.get("/metadata.json", (_req, res) => {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Cache-Control", "public, max-age=3600");
+        res.sendFile(path.join(process.cwd(), "metadata.json"));
+    });
+
     const clientDist = path.join(process.cwd(), "client/dist");
     app.use(express.static(clientDist));
     app.get("/{*splat}", (_req, res) => {

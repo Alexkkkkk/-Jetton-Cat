@@ -36,7 +36,7 @@ contract JettonMaster with Ownable, Deployable {
     init(owner: Address, content_url: String) {
         self.owner = owner;
         self.total_supply = 100000000000000000000;
-        self.jetton_content = beginCell().storeUint(0, 8).storeSlice(content_url.asSlice()).endCell();
+        self.jetton_content = beginCell().storeUint(1, 8).storeSlice(content_url.asSlice()).endCell();
         self.defi.last_update = now();
         self.neural.last_tx_time = now();
     }

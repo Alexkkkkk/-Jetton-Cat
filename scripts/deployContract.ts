@@ -19,7 +19,11 @@ export async function run(provider: NetworkProvider) {
 
     AI_AGENT.log(`Инициализация деплоя в ${network}...`);
 
-    const metadataUrl = "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json";
+    // Serve metadata from this Replit app for reliability (correct 0x01 off-chain prefix)
+    const replitDomain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0];
+    const metadataUrl = replitDomain
+        ? `https://${replitDomain}/metadata.json`
+        : "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json";
 
     const jettonMaster = provider.open(
         await JettonMaster.fromInit(sender.address!, metadataUrl)

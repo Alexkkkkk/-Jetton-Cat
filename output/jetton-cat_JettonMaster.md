@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: JettonMaster
-BoC Size: 2487 bytes
+BoC Size: 2486 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 26
