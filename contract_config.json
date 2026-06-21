@@ -1,35 +1,40 @@
 {
-  "project_info": {
-    "name": "NeuroJetton",
-    "version": "1.0.0-NEURAL",
-    "description": "Adaptive autonomous jetton with AI-feedback loop"
-  },
-  "blockchain_settings": {
-    "workchain": 0,
-    "min_mint_ton": 100000000,
-    "owner_fee_bps": 25
-  },
-  "ai_neural_parameters": {
-    "default_synapse_depth": 100,
-    "max_synapse_depth": 200,
-    "learning_rate": 0.05,
-    "entropy_threshold": 1000
-  },
-  "ai_adaptive_strategy": {
-    "emergency_threshold": 100,
-    "warning_threshold": 300,
-    "optimization_mode_enabled": true,
-    "auto_scaling_min_mint": true,
-    "neural_cooldown_ms": 300000
-  },
-  "deployment": {
-    "logo_url": "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/logo.png",
-    "metadata_url": "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json",
-    "auto_verify": true
-  },
-  "monitoring": {
-    "check_interval_ms": 60000,
-    "liquidity_alert_threshold": 5.0,
-    "emergency_freeze_enabled": true
-  }
+    "project_info": {
+        "name": "NeuroJetton",
+        "version": "1.0.0-NEURAL",
+        "description": "Adaptive autonomous jetton with AI-feedback loop"
+    },
+    "blockchain_settings": {
+        "workchain": 0,
+        "min_mint_ton": 100000000,
+        "owner_fee_bps": 25
+    },
+    "ai_neural_parameters": {
+        "default_synapse_depth": 100,
+        "max_synapse_depth": 200,
+        "learning_rate": 0.05,
+        "entropy_threshold": 1000
+    },
+    "ai_adaptive_strategy": {
+        "emergency_threshold": 100,
+        "warning_threshold": 300,
+        "optimization_mode_enabled": true,
+        "auto_scaling_min_mint": true,
+        "neural_cooldown_ms": 300000
+    },
+    "deployment": {
+        "logo_url": "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/logo.png",
+        "metadata_url": "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json",
+        "auto_verify": true
+    },
+    "monitoring": {
+        "check_interval_ms": 60000,
+        "liquidity_alert_threshold": 5,
+        "emergency_freeze_enabled": true
+    },
+    "masterAddress": "EQDiH9R1w_hy7zMzs-FHNjLWkKGOjYV_SFTiLCTnONEI5f2c",
+    "ownerAddress": "EQCzIQgj34r82DrDGFae3KTB7SsuO_T5LR48uvebP6Gom1w0",
+    "network": "mainnet",
+    "deployed": true,
+    "last_updated": "2026-06-21T07:25:50.036Z"
 }
