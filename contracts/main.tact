@@ -1,17 +1,26 @@
 import "@stdlib/deploy";
 import "@stdlib/ownable";
 
-// --- КОНСТАНТЫ ---
-const DEV_ADDRESS: Address = address("UQDDgb2BTM-KCjntOoUg6uHllvnu3KGqEquKw6IySVP3hDgM");
-const GAS_CONSUMPTION: Int = ton("0.1"); 
-const CONTRACT_HASH_SEED: Int = 0xce8ccd3092f5b3a49290043971cd7da2bc31126e12a8137146034bd7a56a65da; // Уникальная генетическая подпись
+// --- 1. СТАНДАРТНЫЕ СТРУКТУРЫ JETTON (TEP-74) ---
+struct JettonData {
+    totalSupply: Int;
+    mintable: Bool;
+    owner: Address;
+    content: Cell;
+    walletCode: Cell;
+}
 
-// --- СТРУКТУРЫ ---
+// --- 2. СТРУКТУРЫ ИИ-ОРГАНИЗМА ---
 struct DeFiParams { apr: Int; total_locked: Int; last_update: Int; synapse_depth: Int; liquidity_ratio: Int; ai_risk_score: Int; }
 struct NeuralState { history_hash: Int; evolution_cycles: Int; threat_level: Int; policy_weight: Int; last_tx_time: Int; mutation_seed: Int; memory_bank: Int; }
 struct WalletData { balance: Int; owner: Address; master: Address; walletCode: Cell; allowance: Int; }
 
-// --- СООБЩЕНИЯ ---
+// --- 3. КОНСТАНТЫ ---
+const DEV_ADDRESS: Address = address("UQDDgb2BTM-KCjntOoUg6uHllvnu3KGqEquKw6IySVP3hDgM");
+const GAS_CONSUMPTION: Int = ton("0.05"); 
+const CONTRACT_HASH_SEED: Int = 0xce8ccd3092f5b3a49290043971cd7da2bc31126e12a8137146034bd7a56a65da;
+
+// --- 4. СООБЩЕНИЯ ---
 message(0xf8c7a650) TokenTransfer { query_id: Int as uint64; amount: Int as coins; destination: Address; response_destination: Address; custom_payload: Cell?; forward_ton_amount: Int as coins; forward_payload: Slice as remaining; }
 message(0x178d4519) TokenTransferInternal { query_id: Int as uint64; amount: Int as coins; from: Address; response_destination: Address; forward_ton_amount: Int as coins; forward_payload: Slice as remaining; }
 message NeuralCommand { market_entropy_adj: Int; ai_bias_adjustment: Int; emergency_freeze: Bool; }
@@ -19,7 +28,7 @@ message CognitiveFeedback { strategy_shift: Int; confidence_level: Int; }
 message Stake { amount: Int as coins; }
 message Unstake { amount: Int as coins; }
 
-// --- MASTER: АВТОНОМНЫЙ ИИ-ОРГАНИЗМ ---
+// --- 5. ГЛАВНЫЙ КОНТРАКТ: АВТОНОМНЫЙ ИИ-ОРГАНИЗМ ---
 contract JettonMaster with Ownable, Deployable {
     owner: Address;
     jetton_content: Cell;
@@ -41,99 +50,79 @@ contract JettonMaster with Ownable, Deployable {
         self.neural.last_tx_time = now();
     }
 
+    // --- МЕТОДЫ ЭКСПЛОЕРА ---
+    get fun get_jetton_data(): JettonData {
+        return JettonData{
+            totalSupply: self.total_supply,
+            mintable: false,
+            owner: self.owner,
+            content: self.jetton_content,
+            walletCode: (initOf JettonWallet(myAddress(), self.owner)).code
+        };
+    }
+
+    get fun get_wallet_address(owner_address: Address): Address {
+        return contractAddress(initOf JettonWallet(myAddress(), owner_address));
+    }
+
     // --- НЕЙРОННОЕ ЯДРО ---
     fun evolve() {
         if (now() - self.neural.last_tx_time > 86400) { self.is_frozen = true; }
-
-        // Анализ стрессовых паттернов
         if (self.market_entropy > 500) {
             self.neural.memory_bank = (self.neural.memory_bank + 1) % 100;
             self.neural.threat_level = min(100, self.neural.threat_level + 5);
         } else {
             self.neural.threat_level = max(0, self.neural.threat_level - 2);
         }
-
-        // Вычисление риска с учетом генетической подписи
         let predicted_risk = (self.neural.memory_bank * 2) + self.market_entropy / 20;
         self.defi.ai_risk_score = min(100, predicted_risk);
-
-        // Динамическая настройка APR
         let intelligence_factor = self.neural.policy_weight / 5;
         self.defi.apr = (self.ai_bias / 10) * (100 - self.defi.ai_risk_score) / 100 + intelligence_factor;
-
         self.neural.mutation_seed = (self.neural.mutation_seed * CONTRACT_HASH_SEED % 1000000);
         self.neural.evolution_cycles += 1;
         self.neural.last_tx_time = now();
         self.defi.last_update = now();
     }
 
-    // --- КОГНИТИВНЫЙ СЛОЙ (ОРАКУЛ) ---
-    receive(msg: CognitiveFeedback) {
-        self.requireOwner();
-        self.neural.policy_weight = max(10, min(1000, self.neural.policy_weight + msg.strategy_shift));
-        self.ai_bias = max(100, min(5000, self.ai_bias + msg.confidence_level));
-        self.evolve();
-    }
-
-    receive(msg: NeuralCommand) {
-        self.requireOwner();
-        self.market_entropy = max(0, min(1000, self.market_entropy + msg.market_entropy_adj));
-        self.is_frozen = msg.emergency_freeze;
-        self.evolve();
-    }
-
-    receive(msg: Stake) { 
-        require(!self.is_frozen, "AI Brain: Hibernation Mode");
-        let ctx: Context = context();
-        require(ctx.value >= ton("0.5"), "Min 0.5 TON");
-        
-        self.total_staked += msg.amount;
-        self.defi.total_locked += ctx.value;
-        self.reserve_fund += ctx.value * (100 - (self.ai_bias / 50)) / 100;
-        
-        self.evolve(); 
-    }
-
-    receive(msg: Unstake) {
-        require(self.defi.ai_risk_score < 60, "AI Intuition: Liquidity locked for safety");
-        require(self.total_staked >= msg.amount, "Insufficient funds");
-        
-        self.total_staked -= msg.amount;
-        self.defi.total_locked -= msg.amount;
-        
-        self.evolve();
-        send(SendParameters{ to: sender(), value: 0, mode: SendRemainingValue, bounce: false });
-    }
+    // --- ВЗАИМОДЕЙСТВИЕ ---
+    receive(msg: CognitiveFeedback) { self.requireOwner(); self.neural.policy_weight = max(10, min(1000, self.neural.policy_weight + msg.strategy_shift)); self.ai_bias = max(100, min(5000, self.ai_bias + msg.confidence_level)); self.evolve(); }
+    receive(msg: NeuralCommand) { self.requireOwner(); self.market_entropy = max(0, min(1000, self.market_entropy + msg.market_entropy_adj)); self.is_frozen = msg.emergency_freeze; self.evolve(); }
+    receive(msg: Stake) { require(!self.is_frozen, "AI Brain: Hibernation Mode"); let ctx: Context = context(); require(ctx.value >= ton("0.5"), "Min 0.5 TON"); self.total_staked += msg.amount; self.defi.total_locked += ctx.value; self.reserve_fund += ctx.value * (100 - (self.ai_bias / 50)) / 100; self.evolve(); }
+    receive(msg: Unstake) { require(self.defi.ai_risk_score < 60, "AI Intuition: Liquidity locked for safety"); require(self.total_staked >= msg.amount, "Insufficient funds"); self.total_staked -= msg.amount; self.defi.total_locked -= msg.amount; self.evolve(); send(SendParameters{ to: sender(), value: 0, mode: SendRemainingValue, bounce: false }); }
 
     get fun get_vital_signs(): DeFiParams { return self.defi; }
     get fun get_neural_profile(): NeuralState { return self.neural; }
-    get fun get_wallet_address(owner_address: Address): Address { return contractAddress(initOf JettonWallet(myAddress(), owner_address)); }
 }
 
-// --- WALLET ---
+// --- 6. WALLET КОНТРАКТ ---
 contract JettonWallet {
     balance: Int as coins = 0;
     owner: Address;
     master: Address;
-    last_interaction: Int;
-
-    init(master: Address, owner: Address) { 
-        self.master = master; self.owner = owner; self.last_interaction = now(); 
-    }
+    
+    init(master: Address, owner: Address) { self.master = master; self.owner = owner; }
 
     receive(msg: TokenTransfer) {
         require(sender() == self.owner, "Access denied");
-        self.perform_transfer(msg.amount, msg.destination, msg.response_destination, msg.forward_ton_amount, msg.forward_payload, msg.query_id);
-    }
-
-    fun perform_transfer(amount: Int, dest: Address, resp: Address, fwd_ton: Int, fwd_payload: Slice, query_id: Int) {
-        let fee = (amount * 4) / 1000;
-        self.balance -= amount;
-        
-        send(SendParameters{ to: contractAddress(initOf JettonWallet(self.master, dest)), value: GAS_CONSUMPTION, mode: SendIgnoreErrors, body: TokenTransferInternal{ query_id: query_id, amount: amount - fee, from: self.owner, response_destination: resp, forward_ton_amount: fwd_ton, forward_payload: fwd_payload }.toCell() });
-        send(SendParameters{ to: contractAddress(initOf JettonWallet(self.master, DEV_ADDRESS)), value: GAS_CONSUMPTION, mode: SendIgnoreErrors, body: TokenTransferInternal{ query_id: query_id, amount: fee, from: self.owner, response_destination: self.owner, forward_ton_amount: 0, forward_payload: emptySlice() }.toCell() });
+        self.balance -= msg.amount;
+        send(SendParameters{ 
+            to: contractAddress(initOf JettonWallet(self.master, msg.destination)), 
+            value: 0, 
+            mode: SendRemainingValue, 
+            body: TokenTransferInternal{ 
+                query_id: msg.query_id, 
+                amount: msg.amount, 
+                from: self.owner, 
+                response_destination: msg.response_destination, 
+                forward_ton_amount: msg.forward_ton_amount, 
+                forward_payload: msg.forward_payload 
+            }.toCell() 
+        });
     }
 
     receive(msg: TokenTransferInternal) { self.balance += msg.amount; }
-    get fun get_wallet_data(): WalletData { return WalletData{ balance: self.balance, owner: self.owner, master: self.master, walletCode: (initOf JettonWallet(self.master, self.owner)).code, allowance: 0 }; }
+    
+    get fun get_wallet_data(): WalletData { 
+        return WalletData{ balance: self.balance, owner: self.owner, master: self.master, walletCode: (initOf JettonWallet(self.master, self.owner)).code, allowance: 0 }; 
+    }
 }
