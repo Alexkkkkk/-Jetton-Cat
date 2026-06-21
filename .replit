@@ -23,10 +23,6 @@ args = "Start application"
 task = "workflow.run"
 args = "AI Monitor"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Admin Panel"
-
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -36,7 +32,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npx ts-node --transpile-only server/index.ts"
+args = "node_modules/.bin/ts-node --transpile-only server/index.ts"
 waitForPort = 5000
 
 [[workflows.workflow]]
@@ -48,19 +44,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npx ts-node --transpile-only scripts/aiMonitor.ts"
-
-[[workflows.workflow]]
-name = "Admin Panel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npx ts-node --transpile-only server/index.ts"
-waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
+args = "node_modules/.bin/ts-node --transpile-only scripts/aiMonitor.ts"
 
 [deployment]
 deploymentTarget = "vm"
