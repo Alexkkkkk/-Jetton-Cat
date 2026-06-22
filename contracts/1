@@ -1,4 +1,3 @@
-}
 import "@stdlib/deploy";
 import "@stdlib/ownable";
 
@@ -84,7 +83,7 @@ contract JettonMaster with Ownable, Deployable {
         self.defi.last_update = now();
     }
 
-    // --- ЛОГИКА МИНТА ---
+    // --- ЛОГИКА МИНТА (ТОЛЬКО ВЛАДЕЛЕЦ) ---
     receive(msg: Mint) {
         self.requireOwner();
         self.total_supply += msg.amount;
