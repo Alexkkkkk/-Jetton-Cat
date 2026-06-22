@@ -1,17 +1,13 @@
 import "dotenv/config";
-import { TonClient, Address, beginCell, toNano, fromNano, WalletContractV4, internal } from "@ton/ton";
+import { TonClient, Address, toNano, WalletContractV4, internal, beginCell } from "@ton/ton";
 import { mnemonicToPrivateKey } from "@ton/crypto";
 import { JettonMaster } from "../output/jetton-cat_JettonMaster";
-import { JettonWallet } from "../output/jetton-cat_JettonWallet";
 import * as fs from "fs";
-
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function main() {
     // --- Конфигурация ---
     const cfg = JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
     const masterAddress = Address.parse(cfg.masterAddress || process.env.MASTER_ADDRESS!);
-    const network = cfg.network || "mainnet";
 
     const MINT_TO = process.env.MINT_TO;
     const MINT_AMOUNT = process.env.MINT_AMOUNT;
@@ -24,55 +20,44 @@ async function main() {
     const destination = Address.parse(MINT_TO);
     const amount = toNano(MINT_AMOUNT);
 
-    // --- TON Client ---
+    // --- Подключение ---
     const client = new TonClient({
         endpoint: "https://toncenter.com/api/v2/jsonRPC",
         apiKey: process.env.TONCENTER_API_KEY,
     });
 
-    console.log(`\n🐱 NeuroJetton Minting to ${destination.toString()}...`);
-
-    // --- Подготовка ---
     const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC!.split(" "));
     const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
     const walletContract = client.open(wallet);
     
-    // Получаем адрес кошелька через Master (стандарт TEP-74)
-    const master = client.open(JettonMaster.fromAddress(masterAddress));
-    const jettonWalletAddress = await master.getGetWalletAddress(destination);
-
-    // --- Создание сообщения (Opcode 0x178d4519 - Transfer) ---
-    // ВАЖНО: Мы отправляем запрос на Master, чтобы тот выпустил/перевел токены
+    // --- Создание сообщения для МИНТА ---
+    // Мы используем структуру, которую ожидает контракт JettonMaster
+    // Так как сообщение Mint определено в Tact, мы создаем его через его класс
     const body = beginCell()
-        .storeUint(0xf8c7a650, 32) // Opcode: TokenTransfer
-        .storeUint(0, 64)          // query_id
-        .storeCoins(amount)
-        .storeAddress(destination) // destination
-        .storeAddress(wallet.address) // response_destination
-        .storeBit(0)               // custom_payload
-        .storeCoins(toNano("0.05"))// forward_ton_amount
-        .storeBit(0)               // forward_payload (пустой)
+        .storeUint(0x40316d9a, 32) // ID сообщения Mint (вычисляется Tact автоматически)
+        .storeCoins(amount)         // amount
+        .storeAddress(destination)  // recipient
         .endCell();
 
-    // --- Отправка транзакции ---
+    // --- Отправка на MASTER контракт ---
     const seqno = await walletContract.getSeqno();
-    console.log(`🚀 Отправка транзакции с seqno: ${seqno}`);
+    console.log(`🚀 Минтим ${MINT_AMOUNT} токенов на ${destination.toString()}...`);
 
     await walletContract.sendTransfer({
         seqno,
         secretKey: keyPair.secretKey,
         messages: [
             internal({
-                to: jettonWalletAddress,
-                value: toNano("0.1"), // Газ на выполнение
+                to: masterAddress,      // ВАЖНО: Шлем на Master!
+                value: toNano("0.2"),   // Газ на выполнение минта (с запасом)
                 body: body,
                 bounce: true
             })
         ],
     });
 
-    console.log("\n✅ Транзакция отправлена!");
-    console.log(`🔗 Отслеживание: https://tonscan.org/address/${jettonWalletAddress.toString()}`);
+    console.log("\n✅ Транзакция минта отправлена!");
+    console.log(`🔗 Отслеживание мастера: https://tonscan.org/address/${masterAddress.toString()}`);
 }
 
 main().catch(console.error);
