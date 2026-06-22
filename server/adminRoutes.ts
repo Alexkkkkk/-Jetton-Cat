@@ -6,26 +6,6 @@ import { mintTransactions } from "../shared/models/auth";
 import { desc } from "drizzle-orm";
 import axios from "axios";
 import * as fs from "fs";
-import * as path from "path";
-
-let JettonMaster: any = null;
-let JettonWallet: any = null;
-
-function loadContractModules() {
-    if (JettonMaster && JettonWallet) return true;
-    try {
-        const masterPath = path.join(process.cwd(), "output/jetton-cat_JettonMaster");
-        const walletPath = path.join(process.cwd(), "output/jetton-cat_JettonWallet");
-        if (fs.existsSync(masterPath + ".js") || fs.existsSync(masterPath + ".ts")) {
-            JettonMaster = require(masterPath).JettonMaster;
-            JettonWallet = require(walletPath).JettonWallet;
-            return true;
-        }
-        return false;
-    } catch {
-        return false;
-    }
-}
 
 function getMasterAddress(): string {
     const config = JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
@@ -53,12 +33,12 @@ adminRoutes.get("/stats", async (_req, res) => {
         try {
             const r = await client.runMethod(master, "get_vital_signs");
             contractStats = {
-                apr: r.stack.readNumber(),
-                total_locked: fromNano(r.stack.readBigNumber()),
-                last_update: r.stack.readNumber(),
-                synapse_depth: r.stack.readNumber(),
+                apr:            r.stack.readNumber(),
+                total_locked:   fromNano(r.stack.readBigNumber()),
+                last_update:    r.stack.readNumber(),
+                synapse_depth:  r.stack.readNumber(),
                 liquidity_ratio: r.stack.readNumber(),
-                health: r.stack.readNumber(),
+                health:         r.stack.readNumber(), // ai_risk_score
             };
         } catch (_) {
             contractStats = { error: "Contract not yet active (exit_code 11)" };
@@ -67,12 +47,12 @@ adminRoutes.get("/stats", async (_req, res) => {
         const configData = JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
 
         res.json({
-            masterAddress: process.env.MASTER_ADDRESS,
+            masterAddress: getMasterAddress(),
             balance,
             network: process.env.NETWORK_TYPE || "mainnet",
             contractStats,
             config: configData,
-            tonscanUrl: `https://tonscan.org/address/${process.env.MASTER_ADDRESS}`,
+            tonscanUrl: `https://tonscan.org/address/${getMasterAddress()}`,
         });
     } catch (e: any) {
         res.status(500).json({ error: e.message });
@@ -81,18 +61,20 @@ adminRoutes.get("/stats", async (_req, res) => {
 
 adminRoutes.post("/neural-command", async (req, res) => {
     try {
-        const { freeze, enableArbitrage, minMint } = req.body;
+        const { freeze, entropyAdj = 0, biasAdj = 0 } = req.body;
         const client = getClient();
         const master = Address.parse(getMasterAddress());
         const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC!.split(" "));
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
+        // NeuralCommand opcode from compiled Tact output (jetton-cat_JettonMaster.ts)
+        // Fields: market_entropy_adj (Int as 257), ai_bias_adjustment (Int as 257), emergency_freeze (Bool)
         const body = beginCell()
-            .storeUint(2735106208, 32)  // NeuralCommand opcode
-            .storeInt(0, 257)           // market_entropy_adj
-            .storeInt(0, 257)           // ai_bias_adjustment
-            .storeBit(!!freeze)         // emergency_freeze
+            .storeUint(2735106208, 32)
+            .storeInt(Number(entropyAdj), 257)
+            .storeInt(Number(biasAdj), 257)
+            .storeBit(!!freeze)
             .endCell();
 
         const seqno = await walletContract.getSeqno();
@@ -102,7 +84,10 @@ adminRoutes.post("/neural-command", async (req, res) => {
             messages: [internal({ to: master, value: toNano("0.1"), body })],
         });
 
-        res.json({ success: true, message: `Neural command sent: freeze=${freeze}, arbitrage=${enableArbitrage}` });
+        res.json({
+            success: true,
+            message: `Neural command sent: freeze=${freeze}, entropyAdj=${entropyAdj}, biasAdj=${biasAdj}`,
+        });
     } catch (e: any) {
         res.status(500).json({ error: e.message });
     }
@@ -125,12 +110,12 @@ adminRoutes.post("/mint", async (req, res) => {
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
-        // Send Mint message (opcode 122372062) directly to the master contract.
-        // The master handles deploying the wallet and crediting the balance internally.
+        // Mint opcode from compiled Tact output (jetton-cat_JettonMaster.ts)
+        // Fields: amount (coins), recipient (Address)
         const body = beginCell()
-            .storeUint(122372062, 32)   // Mint opcode
-            .storeCoins(amountNano)      // amount
-            .storeAddress(destAddress)   // recipient
+            .storeUint(122372062, 32)
+            .storeCoins(amountNano)
+            .storeAddress(destAddress)
             .endCell();
 
         const seqno = await walletContract.getSeqno();
@@ -161,12 +146,7 @@ adminRoutes.get("/mint-history", async (_req, res) => {
             .orderBy(desc(mintTransactions.createdAt))
             .limit(50);
 
-        const formatted = rows.map(r => ({
-            ...r,
-            amount: (Number(r.amount) / 1e9).toString(),
-        }));
-
-        res.json(formatted);
+        res.json(rows);
     } catch (e: any) {
         res.status(500).json({ error: e.message });
     }
@@ -185,6 +165,8 @@ adminRoutes.post("/stake", async (req, res) => {
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
+        // Stake opcode from compiled Tact output: 3203459332
+        // Fields: amount (coins)
         const body = beginCell()
             .storeUint(3203459332, 32)
             .storeCoins(amountNano)
@@ -216,6 +198,8 @@ adminRoutes.post("/unstake", async (req, res) => {
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
+        // Unstake opcode from compiled Tact output: 4284693473
+        // Fields: amount (coins)
         const body = beginCell()
             .storeUint(4284693473, 32)
             .storeCoins(amountNano)
@@ -238,7 +222,7 @@ adminRoutes.post("/telegram-test", async (_req, res) => {
     try {
         await axios.post(`https://api.telegram.org/bot${process.env.TG_BOT_TOKEN}/sendMessage`, {
             chat_id: process.env.TG_CHAT_ID,
-            text: "🧠 *Admin Panel*: Тестовое сообщение отправлено из Replit Admin Dashboard.",
+            text: "🧠 *Admin Panel*: Test message sent from NeuroJetton Admin Dashboard.",
             parse_mode: "Markdown",
         });
         res.json({ success: true });

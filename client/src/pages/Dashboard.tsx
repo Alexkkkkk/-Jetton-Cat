@@ -43,8 +43,8 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
     return () => clearInterval(interval);
   }, [fetchStats]);
 
-  const handleNeuralCmd = async (cmd: any) => {
-    addLog(`🧠 Sending neural command: freeze=${cmd.freeze}, arbitrage=${cmd.enableArbitrage}...`);
+  const handleNeuralCmd = async (cmd: { freeze: boolean; entropyAdj: number; biasAdj: number }) => {
+    addLog(`🧠 Sending neural command: freeze=${cmd.freeze}, entropy=${cmd.entropyAdj}, bias=${cmd.biasAdj}...`);
     try {
       const r = await fetch("/api/admin/neural-command", {
         method: "POST", credentials: "include",
