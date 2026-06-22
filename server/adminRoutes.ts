@@ -100,7 +100,7 @@ adminRoutes.post("/neural-command", async (req, res) => {
         await walletContract.sendTransfer({
             seqno,
             secretKey: keyPair.secretKey,
-            messages: [internal({ to: master, value: toNano("0.05"), body })],
+            messages: [internal({ to: master, value: toNano("0.1"), body })],
         });
 
         res.json({ success: true, message: `Neural command sent: freeze=${freeze}, arbitrage=${enableArbitrage}` });

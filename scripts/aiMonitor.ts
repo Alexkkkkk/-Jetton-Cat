@@ -43,7 +43,7 @@ const AI_AGENT = {
         await walletContract.sendTransfer({
             seqno,
             secretKey: keyPair.secretKey,
-            messages: [ internal({ to: master, value: toNano("0.05"), body: body }) ]
+            messages: [ internal({ to: master, value: toNano("0.1"), body: body }) ]
         });
     },
 
@@ -63,7 +63,7 @@ const AI_AGENT = {
         await walletContract.sendTransfer({
             seqno,
             secretKey: keyPair.secretKey,
-            messages: [ internal({ to: master, value: toNano("0.05"), body: body }) ]
+            messages: [ internal({ to: master, value: toNano("0.1"), body: body }) ]
         });
     }
 };
