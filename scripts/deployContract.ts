@@ -9,6 +9,7 @@ const AI_AGENT = {
 };
 
 const DEV_ADDRESS: Address = Address.parse("UQDDgb2BTM-KCjntOoUg6uHllvnu3KGqEquKw6IySVP3hDgM");
+const METADATA_FIXED_URL = "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -19,10 +20,8 @@ export async function run(provider: NetworkProvider) {
 
     AI_AGENT.log(`Инициализация деплоя в ${network}...`);
 
-    // Use METADATA_URL env var if set (recommended: your published *.replit.app domain)
-    // Otherwise fall back to the GitHub raw URL (stable, always accessible)
-    const metadataUrl = process.env.METADATA_URL
-        || "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json";
+    // Используем вашу закрепленную ссылку
+    const metadataUrl = process.env.METADATA_URL || METADATA_FIXED_URL;
     ui.write(`📄 Metadata URL: ${metadataUrl}`);
 
     const jettonMaster = provider.open(
@@ -32,8 +31,8 @@ export async function run(provider: NetworkProvider) {
     const deployValue = toNano('1.0');
     ui.write(`🌍 AI-Агент: Начинаю аудит для ${network.toUpperCase()}...`);
 
-    const state = await provider.provider(sender.address!).getState();
-    const balance = state.balance;
+    // Проверка баланса
+    const balance = await provider.provider(sender.address!).getState().then(s => s.balance);
     ui.write(`💰 Текущий баланс: ${(Number(balance)/1e9).toFixed(2)} TON`);
 
     if (balance < deployValue) {
@@ -43,7 +42,7 @@ export async function run(provider: NetworkProvider) {
     const contractAddress = jettonMaster.address.toString();
     ui.write(`🚀 ОТПРАВКА В ${network.toUpperCase()}: ${contractAddress}`);
 
-    // Step 1: send the deploy transaction (with retry on 429)
+    // Step 1: отправка транзакции с расширенной обработкой ошибок
     let sent = false;
     for (let attempt = 1; attempt <= 8; attempt++) {
         try {
@@ -58,21 +57,22 @@ export async function run(provider: NetworkProvider) {
             sent = true;
             break;
         } catch (e: any) {
-            const is429 = e?.message?.includes('429') || (e?.cause?.message || '').includes('429');
+            const errStr = typeof e === 'string' ? e : JSON.stringify(e);
+            const is429 = errStr.includes('429');
             if (is429 && attempt < 8) {
                 const wait = attempt * 20000;
-                ui.write(`⚠️ Rate limit (429). Ожидание ${wait/1000} сек перед повтором... (${attempt}/8)`);
+                ui.write(`⚠️ Rate limit (429). Ожидание ${wait/1000} сек... (${attempt}/8)`);
                 await sleep(wait);
             } else {
-                ui.write(`❌ AI-Агент: Ошибка отправки транзакции: ${e}`);
+                ui.write(`❌ AI-Агент: Критическая ошибка отправки: ${errStr}`);
                 return;
             }
         }
     }
     if (!sent) return;
 
-    // Step 2: wait for confirmation — tolerate rate-limit errors
-    ui.write('⏳ AI-Агент: Транзакция отправлена. Ожидание подтверждения (до 3 мин)...');
+    // Step 2: подтверждение
+    ui.write('⏳ AI-Агент: Транзакция отправлена. Ожидание подтверждения...');
     await sleep(5000);
 
     let deployed = false;
@@ -82,21 +82,14 @@ export async function run(provider: NetworkProvider) {
             deployed = true;
             break;
         } catch (e: any) {
-            const is429 = e?.message?.includes('429') || e?.status === 429 ||
-                          (e?.cause?.message || '').includes('429');
-            if (is429) {
-                ui.write(`⚠️ Rate limit (429). Повтор через 15 сек... (попытка ${attempt}/10)`);
-                await sleep(15000);
-            } else {
-                ui.write(`⚠️ Ожидание: ${e?.message ?? e}. Повтор через 10 сек...`);
-                await sleep(10000);
-            }
+            ui.write(`⚠️ Ожидание сети... (попытка ${attempt}/10)`);
+            await sleep(15000);
         }
     }
 
     AI_AGENT.log(AI_AGENT.analyze({ type: 'DEPLOYMENT', network }));
 
-    // Step 3: save config regardless — tx was already broadcast
+    // Step 3: фиксация конфига
     const configData = {
         masterAddress: contractAddress,
         devAddress: DEV_ADDRESS.toString(),
@@ -113,13 +106,11 @@ export async function run(provider: NetworkProvider) {
 
     ui.clearActionPrompt();
     ui.write(`
-${deployed ? '✅ ДЕПЛОЙ УСПЕШЕН (AI-VERIFIED)' : '⚠️  ТРАНЗАКЦИЯ ОТПРАВЛЕНА (подтверждение через tonscan)'}
+${deployed ? '✅ ДЕПЛОЙ УСПЕШЕН (AI-VERIFIED)' : '⚠️ ТРАНЗАКЦИЯ ОТПРАВЛЕНА'}
 --------------------------------------------------
 💎 MASTER ADDRESS  : ${contractAddress}
-🛠  DEV ADDRESS     : ${DEV_ADDRESS.toString()}
-👤 OWNER ADDRESS   : ${sender.address?.toString()}
 🔗 TONSCAN         : https://${network === 'testnet' ? 'testnet.' : ''}tonscan.org/address/${contractAddress}
 --------------------------------------------------
-💡 Файл contract_config.json обновлен и сохранен.
+💡 Конфиг сохранен в contract_config.json.
     `);
 }
