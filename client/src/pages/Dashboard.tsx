@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { StatCard } from "../components/StatCard";
 import { NeuralCommandPanel } from "../components/NeuralCommandPanel";
 import { MintPanel } from "../components/MintPanel";
+import { StakePanel } from "../components/StakePanel";
 import { MintHistory } from "../components/MintHistory";
 import { LogPanel } from "../components/LogPanel";
 
@@ -133,6 +134,10 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
               <NeuralCommandPanel onSend={handleNeuralCmd} onTelegramTest={handleTelegramTest} />
               <MintPanel onLog={addLog} />
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <StakePanel onLog={addLog} totalLocked={cs.total_locked} />
             </div>
 
             <div style={{ marginBottom: 24 }}>

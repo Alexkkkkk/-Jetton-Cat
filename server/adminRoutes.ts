@@ -188,6 +188,68 @@ adminRoutes.get("/mint-history", async (_req, res) => {
     }
 });
 
+adminRoutes.post("/stake", async (req, res) => {
+    try {
+        const { amount } = req.body;
+        if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) < 0.5) {
+            return res.status(400).json({ error: "Minimum stake is 0.5 TON" });
+        }
+        const amountNano = toNano(String(amount));
+        const client = getClient();
+        const master = Address.parse(getMasterAddress());
+        const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC!.split(" "));
+        const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
+        const walletContract = client.open(wallet);
+
+        const body = beginCell()
+            .storeUint(3203459332, 32)
+            .storeCoins(amountNano)
+            .endCell();
+
+        const seqno = await walletContract.getSeqno();
+        await walletContract.sendTransfer({
+            seqno,
+            secretKey: keyPair.secretKey,
+            messages: [internal({ to: master, value: amountNano + toNano("0.1"), body, bounce: true })],
+        });
+
+        res.json({ success: true, message: `Staked ${amount} TON to contract` });
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+adminRoutes.post("/unstake", async (req, res) => {
+    try {
+        const { amount } = req.body;
+        if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+            return res.status(400).json({ error: "Amount must be greater than 0" });
+        }
+        const amountNano = toNano(String(amount));
+        const client = getClient();
+        const master = Address.parse(getMasterAddress());
+        const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC!.split(" "));
+        const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
+        const walletContract = client.open(wallet);
+
+        const body = beginCell()
+            .storeUint(4284693473, 32)
+            .storeCoins(amountNano)
+            .endCell();
+
+        const seqno = await walletContract.getSeqno();
+        await walletContract.sendTransfer({
+            seqno,
+            secretKey: keyPair.secretKey,
+            messages: [internal({ to: master, value: toNano("0.1"), body, bounce: true })],
+        });
+
+        res.json({ success: true, message: `Unstake of ${amount} TON requested` });
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 adminRoutes.post("/telegram-test", async (_req, res) => {
     try {
         await axios.post(`https://api.telegram.org/bot${process.env.TG_BOT_TOKEN}/sendMessage`, {
