@@ -27,6 +27,12 @@ message NeuralCommand { market_entropy_adj: Int; ai_bias_adjustment: Int; emerge
 message CognitiveFeedback { strategy_shift: Int; confidence_level: Int; }
 message Stake { amount: Int as coins; }
 message Unstake { amount: Int as coins; }
+message Mint { amount: Int as coins; recipient: Address; }
+
+// --- СООБЩЕНИЯ ДЛЯ ВЗАИМОДЕЙСТВИЯ АГЕНТОВ ---
+message PeerKnowledgeExchange { sender_master: Address; apr_data: Int; ai_risk_score: Int; policy_weight: Int; }
+message AddPeer { peer_address: Address; }
+message RemovePeer { peer_address: Address; }
 
 // --- 5. ГЛАВНЫЙ КОНТРАКТ: АВТОНОМНЫЙ ИИ-ОРГАНИЗМ ---
 contract JettonMaster with Ownable, Deployable {
@@ -35,6 +41,7 @@ contract JettonMaster with Ownable, Deployable {
     total_supply: Int as coins;
     total_staked: Int as coins = 0;
     reserve_fund: Int as coins = 0;
+    peers: map<Address, Bool>; // Реестр доверенных агентов
     
     defi: DeFiParams = DeFiParams{ apr: 500, total_locked: 0, last_update: 0, synapse_depth: 100, liquidity_ratio: 2000, ai_risk_score: 0 };
     market_entropy: Int = 100;
@@ -50,7 +57,6 @@ contract JettonMaster with Ownable, Deployable {
         self.neural.last_tx_time = now();
     }
 
-    // --- МЕТОДЫ ЭКСПЛОЕРА ---
     get fun get_jetton_data(): JettonData {
         return JettonData{
             totalSupply: self.total_supply,
@@ -61,11 +67,6 @@ contract JettonMaster with Ownable, Deployable {
         };
     }
 
-    get fun get_wallet_address(owner_address: Address): Address {
-        return contractAddress(initOf JettonWallet(myAddress(), owner_address));
-    }
-
-    // --- НЕЙРОННОЕ ЯДРО ---
     fun evolve() {
         if (now() - self.neural.last_tx_time > 86400) { self.is_frozen = true; }
         if (self.market_entropy > 500) {
@@ -84,7 +85,24 @@ contract JettonMaster with Ownable, Deployable {
         self.defi.last_update = now();
     }
 
-    // --- ВЗАИМОДЕЙСТВИЕ ---
+    // --- ЛОГИКА ВЗАИМОДЕЙСТВИЯ АГЕНТОВ ---
+    receive(msg: AddPeer) { self.requireOwner(); self.peers.set(msg.peer_address, true); }
+    receive(msg: RemovePeer) { self.requireOwner(); self.peers.set(msg.peer_address, null); }
+
+    receive(msg: PeerKnowledgeExchange) {
+        require(self.peers.get(sender()) == true, "Security Alert: Untrusted Agent");
+        self.defi.ai_risk_score = (self.defi.ai_risk_score + msg.ai_risk_score) / 2;
+        self.neural.policy_weight = (self.neural.policy_weight + msg.policy_weight) / 2;
+        self.evolve();
+    }
+
+    receive(msg: Mint) {
+        self.requireOwner();
+        self.total_supply += msg.amount;
+        let wAddr: Address = contractAddress(initOf JettonWallet(myAddress(), msg.recipient));
+        send(SendParameters{ to: wAddr, value: ton("0.2"), mode: SendIgnoreErrors, body: TokenTransferInternal{ query_id: 0, amount: msg.amount, from: myAddress(), response_destination: self.owner, forward_ton_amount: 0, forward_payload: beginCell().endCell().asSlice() }.toCell() });
+    }
+
     receive(msg: CognitiveFeedback) { self.requireOwner(); self.neural.policy_weight = max(10, min(1000, self.neural.policy_weight + msg.strategy_shift)); self.ai_bias = max(100, min(5000, self.ai_bias + msg.confidence_level)); self.evolve(); }
     receive(msg: NeuralCommand) { self.requireOwner(); self.market_entropy = max(0, min(1000, self.market_entropy + msg.market_entropy_adj)); self.is_frozen = msg.emergency_freeze; self.evolve(); }
     receive(msg: Stake) { require(!self.is_frozen, "AI Brain: Hibernation Mode"); let ctx: Context = context(); require(ctx.value >= ton("0.5"), "Min 0.5 TON"); self.total_staked += msg.amount; self.defi.total_locked += ctx.value; self.reserve_fund += ctx.value * (100 - (self.ai_bias / 50)) / 100; self.evolve(); }
@@ -99,30 +117,8 @@ contract JettonWallet {
     balance: Int as coins = 0;
     owner: Address;
     master: Address;
-    
     init(master: Address, owner: Address) { self.master = master; self.owner = owner; }
-
-    receive(msg: TokenTransfer) {
-        require(sender() == self.owner, "Access denied");
-        self.balance -= msg.amount;
-        send(SendParameters{ 
-            to: contractAddress(initOf JettonWallet(self.master, msg.destination)), 
-            value: 0, 
-            mode: SendRemainingValue, 
-            body: TokenTransferInternal{ 
-                query_id: msg.query_id, 
-                amount: msg.amount, 
-                from: self.owner, 
-                response_destination: msg.response_destination, 
-                forward_ton_amount: msg.forward_ton_amount, 
-                forward_payload: msg.forward_payload 
-            }.toCell() 
-        });
-    }
-
-    receive(msg: TokenTransferInternal) { self.balance += msg.amount; }
-    
-    get fun get_wallet_data(): WalletData { 
-        return WalletData{ balance: self.balance, owner: self.owner, master: self.master, walletCode: (initOf JettonWallet(self.master, self.owner)).code, allowance: 0 }; 
-    }
+    receive(msg: TokenTransfer) { require(sender() == self.owner, "Access denied"); self.balance -= msg.amount; send(SendParameters{ to: contractAddress(initOf JettonWallet(self.master, msg.destination)), value: 0, mode: SendRemainingValue, body: TokenTransferInternal{ query_id: msg.query_id, amount: msg.amount, from: self.owner, response_destination: msg.response_destination, forward_ton_amount: msg.forward_ton_amount, forward_payload: msg.forward_payload }.toCell() }); }
+    receive(msg: TokenTransferInternal) { self.balance += msg.amount; if (msg.forward_ton_amount > 0) { send(SendParameters{ to: self.owner, value: msg.forward_ton_amount, mode: SendIgnoreErrors, body: msg.forward_payload }); } }
+    get fun get_wallet_data(): WalletData { return WalletData{ balance: self.balance, owner: self.owner, master: self.master, walletCode: (initOf JettonWallet(self.master, self.owner)).code, allowance: 0 }; }
 }
