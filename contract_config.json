@@ -32,9 +32,9 @@
         "liquidity_alert_threshold": 5,
         "emergency_freeze_enabled": true
     },
-    "masterAddress": "EQAXzbBslx_p0fP94rPit5xTxyX91vfUPw3YonoPRno9QGkO",
+    "masterAddress": "EQATi7SzUQv1Z_SlprfEarJ54_p6zoTQZX5WjeLZLysUC9KJ",
     "ownerAddress": "EQCzIQgj34r82DrDGFae3KTB7SsuO_T5LR48uvebP6Gom1w0",
     "network": "mainnet",
     "deployed": true,
-    "last_updated": "2026-06-22T14:49:11.341Z"
+    "last_updated": "2026-06-22T14:53:05.935Z"
 }

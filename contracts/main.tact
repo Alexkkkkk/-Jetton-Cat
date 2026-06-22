@@ -110,6 +110,7 @@ contract JettonMaster with Ownable, Deployable {
 
     get fun get_vital_signs(): DeFiParams { return self.defi; }
     get fun get_neural_profile(): NeuralState { return self.neural; }
+    get fun get_wallet_address(owner: Address): Address { return contractAddress(initOf JettonWallet(myAddress(), owner)); }
 }
 
 // --- 6. WALLET КОНТРАКТ ---

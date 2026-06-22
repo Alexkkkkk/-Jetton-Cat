@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: JettonMaster
-BoC Size: 3146 bytes
+BoC Size: 3322 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 31
@@ -130,7 +130,7 @@ TL-B: `_ balance:coins owner:address master:address = JettonWallet`
 Signature: `JettonWallet{balance:coins,owner:address,master:address}`
 
 ## Get methods
-Total get methods: 4
+Total get methods: 5
 
 ## get_jetton_data
 No arguments
@@ -140,6 +140,9 @@ No arguments
 
 ## get_neural_profile
 No arguments
+
+## get_wallet_address
+Argument: owner
 
 ## owner
 No arguments

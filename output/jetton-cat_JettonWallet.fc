@@ -363,8 +363,8 @@ builder $JettonWallet$init$_store(builder build_0, (slice, slice) v) inline {
 
 ((int, slice, slice), (int, slice, slice, cell, int)) $JettonWallet$_fun_get_wallet_data((int, slice, slice) $self) impure inline_ref {
     var (($self'balance, $self'owner, $self'master)) = $self;
-    var $fresh$ret_4 = $WalletData$_constructor_balance_owner_master_walletCode_allowance($self'balance, $self'owner, $self'master, $StateInit$_get_code($JettonWallet$_init_child($self'master, $self'owner)), 0);
-    return (($self'balance, $self'owner, $self'master), $fresh$ret_4);
+    var $fresh$ret_5 = $WalletData$_constructor_balance_owner_master_walletCode_allowance($self'balance, $self'owner, $self'master, $StateInit$_get_code($JettonWallet$_init_child($self'master, $self'owner)), 0);
+    return (($self'balance, $self'owner, $self'master), $fresh$ret_5);
 }
 
 ;;

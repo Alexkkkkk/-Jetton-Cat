@@ -119,6 +119,9 @@ slice $global_contractAddress((cell, cell) $s) impure inline;
 ;; $JettonMaster$_fun_get_neural_profile
 ((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), (int, int, int, int, int, int, int)) $JettonMaster$_fun_get_neural_profile((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref;
 
+;; $JettonMaster$_fun_get_wallet_address
+((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), slice) $JettonMaster$_fun_get_wallet_address((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self, slice $owner) impure inline_ref;
+
 ;; $MessageParameters$_constructor_bounce_to_value_mode_body
 ((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline;
 
@@ -392,8 +395,8 @@ int $global_myBalance() impure asm """
 
 ((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), slice) $JettonMaster$_fun_owner((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref {
     var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
-    var $fresh$ret_8 = $self'owner;
-    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_8);
+    var $fresh$ret_10 = $self'owner;
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_10);
 }
 
 ;; jetton-cat_JettonMaster.storage.fc
@@ -697,8 +700,8 @@ cell $JettonWallet$_child_get_code() impure asm """
 
 ((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), (int, int, slice, cell, cell)) $JettonMaster$_fun_get_jetton_data((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref {
     var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
-    var $fresh$ret_5 = $JettonData$_constructor_totalSupply_mintable_owner_content_walletCode($self'total_supply, false, $self'owner, $self'jetton_content, $StateInit$_get_code($JettonWallet$_init_child($global_myAddress(), $self'owner)));
-    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_5);
+    var $fresh$ret_6 = $JettonData$_constructor_totalSupply_mintable_owner_content_walletCode($self'total_supply, false, $self'owner, $self'jetton_content, $StateInit$_get_code($JettonWallet$_init_child($global_myAddress(), $self'owner)));
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_6);
 }
 
 ((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), ()) $JettonMaster$_fun_evolve((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref {
@@ -725,14 +728,20 @@ cell $JettonWallet$_child_get_code() impure asm """
 
 ((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), (int, int, int, int, int, int)) $JettonMaster$_fun_get_vital_signs((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref {
     var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
-    var $fresh$ret_6 = ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score);
-    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_6);
+    var $fresh$ret_7 = ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score);
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_7);
 }
 
 ((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), (int, int, int, int, int, int, int)) $JettonMaster$_fun_get_neural_profile((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self) impure inline_ref {
     var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
-    var $fresh$ret_7 = ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank);
-    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_7);
+    var $fresh$ret_8 = ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank);
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_8);
+}
+
+((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int), slice) $JettonMaster$_fun_get_wallet_address((slice, cell, int, int, int, cell, (int, int, int, int, int, int), int, int, (int, int, int, int, int, int, int), int) $self, slice $owner) impure inline_ref {
+    var (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)) = $self;
+    var $fresh$ret_9 = $global_contractAddress($JettonWallet$_init_child($global_myAddress(), $owner));
+    return (($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen), $fresh$ret_9);
 }
 
 ;;
@@ -755,6 +764,13 @@ _ %get_neural_profile() method_id(69594) {
     var self = $JettonMaster$_contract_load();
     var res = self~$JettonMaster$_fun_get_neural_profile();
     return $NeuralState$_to_external(res);
+}
+
+_ %get_wallet_address(slice $owner) method_id(103289) {
+    slice $owner = $owner;
+    var self = $JettonMaster$_contract_load();
+    var res = self~$JettonMaster$_fun_get_wallet_address($owner);
+    return res;
 }
 
 _ %owner() method_id(83229) {

@@ -37,6 +37,7 @@ PROGRAM{
   DECLPROC $JettonMaster$_fun_evolve
   DECLPROC $JettonMaster$_fun_get_vital_signs
   DECLPROC $JettonMaster$_fun_get_neural_profile
+  DECLPROC $JettonMaster$_fun_get_wallet_address
   DECLPROC $MessageParameters$_constructor_bounce_to_value_mode_body
   DECLPROC $JettonMaster$_fun_notify
   DECLPROC $JettonMaster$_fun_requireOwner
@@ -48,6 +49,7 @@ PROGRAM{
   106029 DECLMETHOD %get_jetton_data
   118385 DECLMETHOD %get_vital_signs
   69594 DECLMETHOD %get_neural_profile
+  103289 DECLMETHOD %get_wallet_address
   83229 DECLMETHOD %owner
   DECLPROC recv_internal
   65535 DECLMETHOD __tact_selector_hack
@@ -568,6 +570,12 @@ PROGRAM{
     s7 s6 s5 PUSH3
     s7 PUSH
   }>
+  $JettonMaster$_fun_get_wallet_address PROCREF:<{
+        MYADDR
+    SWAP
+    $JettonWallet$_init_child INLINECALLDICT
+    $global_contractAddress INLINECALLDICT
+  }>
   $MessageParameters$_constructor_bounce_to_value_mode_body PROCINLINE:<{
     s3 s3 XCHG2
     s0 s4 XCHG
@@ -646,6 +654,21 @@ PROGRAM{
     14 7 BLKDROP2
     8 7 BLKDROP2
     $NeuralState$_to_external INLINECALLDICT
+  }>
+  %get_wallet_address PROC:<{
+    $JettonMaster$_contract_load INLINECALLDICT
+    21 s() 22 s() XCHG
+    20 s() 21 s() XCHG
+    19 s() 20 s() XCHG
+    18 s() 19 s() XCHG
+    17 s() 18 s() XCHG
+    16 s() 17 s() XCHG
+    s15 16 s() XCHG
+    15 ROLL
+    $JettonMaster$_fun_get_wallet_address INLINECALLDICT
+    16 s() POP
+    15 BLKDROP
+    6 1 BLKDROP2
   }>
   %owner PROC:<{
     $JettonMaster$_contract_load INLINECALLDICT
