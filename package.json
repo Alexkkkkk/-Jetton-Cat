@@ -2,10 +2,14 @@
   "name": "jetton-cat",
   "version": "1.0.0",
   "scripts": {
-    "build": "blueprint build",
+    "build:contracts": "blueprint build",
     "test": "blueprint test",
     "run": "blueprint run",
-    "deploy": "blueprint run"
+    "deploy": "blueprint run",
+    "build:client": "cd client && npm install && npm run build",
+    "start": "node_modules/.bin/ts-node --transpile-only server/index.ts",
+    "monitor": "node_modules/.bin/ts-node --transpile-only scripts/aiMonitor.ts",
+    "dev": "npm run build:client && npm run start"
   },
   "devDependencies": {
     "@tact-lang/compiler": "^1.6.13",

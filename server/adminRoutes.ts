@@ -1,13 +1,31 @@
 import { Router } from "express";
 import { TonClient, Address, fromNano, beginCell, internal, WalletContractV4, toNano } from "@ton/ton";
 import { mnemonicToPrivateKey } from "@ton/crypto";
-import { JettonMaster } from "../output/jetton-cat_JettonMaster";
-import { JettonWallet } from "../output/jetton-cat_JettonWallet";
 import { db } from "./db";
 import { mintTransactions } from "../shared/models/auth";
 import { desc } from "drizzle-orm";
 import axios from "axios";
 import * as fs from "fs";
+import * as path from "path";
+
+let JettonMaster: any = null;
+let JettonWallet: any = null;
+
+function loadContractModules() {
+    if (JettonMaster && JettonWallet) return true;
+    try {
+        const masterPath = path.join(process.cwd(), "output/jetton-cat_JettonMaster");
+        const walletPath = path.join(process.cwd(), "output/jetton-cat_JettonWallet");
+        if (fs.existsSync(masterPath + ".js") || fs.existsSync(masterPath + ".ts")) {
+            JettonMaster = require(masterPath).JettonMaster;
+            JettonWallet = require(walletPath).JettonWallet;
+            return true;
+        }
+        return false;
+    } catch {
+        return false;
+    }
+}
 
 function getMasterAddress(): string {
     const config = JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
@@ -93,6 +111,12 @@ adminRoutes.post("/neural-command", async (req, res) => {
 
 adminRoutes.post("/mint", async (req, res) => {
     try {
+        if (!loadContractModules()) {
+            return res.status(503).json({ 
+                error: "Contract output not compiled. Run 'npm run build:contracts' first to compile the Tact contracts." 
+            });
+        }
+
         const { destination, amount } = req.body;
         if (!destination || !amount) {
             return res.status(400).json({ error: "destination and amount are required" });
@@ -104,16 +128,13 @@ adminRoutes.post("/mint", async (req, res) => {
         const client = getClient();
         const masterAddress = Address.parse(getMasterAddress());
 
-        // Resolve the JettonWallet address + stateInit for inactive wallets
         const master = client.open(JettonMaster.fromAddress(masterAddress));
         const walletAddress = await master.getGetWalletAddress(destAddress);
 
-        // Deploy wallet contract alongside the first mint if it's inactive
         const walletState = await client.provider(walletAddress).getState();
         const isDeployed = walletState.state.type === "active";
         const stateInit = isDeployed ? undefined : await JettonWallet.init(masterAddress, destAddress);
 
-        // Build TokenTransferInternal (opcode 0x178d4519)
         const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC!.split(" "));
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
