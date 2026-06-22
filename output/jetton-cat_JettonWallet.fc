@@ -27,7 +27,7 @@ builder $JettonWallet$_store(builder build_0, (int, slice, slice) v) inline;
 _ $StateInit$_get_code((cell, cell) v) inline;
 
 ;; $WalletData$_to_external
-(int, slice, slice, cell, int) $WalletData$_to_external(((int, slice, slice, cell, int)) v) inline;
+(int, slice, slice, cell) $WalletData$_to_external(((int, slice, slice, cell)) v) inline;
 
 ;; $JettonWallet$init$_store
 builder $JettonWallet$init$_store(builder build_0, (slice, slice) v) inline;
@@ -62,11 +62,11 @@ cell $Slice$_fun_asCell(slice $self) impure inline;
 ;; $JettonWallet$_init_child
 (cell, cell) $JettonWallet$_init_child(slice $master, slice $owner) inline_ref;
 
-;; $WalletData$_constructor_balance_owner_master_walletCode_allowance
-((int, slice, slice, cell, int)) $WalletData$_constructor_balance_owner_master_walletCode_allowance(int $balance, slice $owner, slice $master, cell $walletCode, int $allowance) inline;
+;; $WalletData$_constructor_balance_owner_master_walletCode
+((int, slice, slice, cell)) $WalletData$_constructor_balance_owner_master_walletCode(int $balance, slice $owner, slice $master, cell $walletCode) inline;
 
 ;; $JettonWallet$_fun_get_wallet_data
-((int, slice, slice), (int, slice, slice, cell, int)) $JettonWallet$_fun_get_wallet_data((int, slice, slice) $self) impure inline_ref;
+((int, slice, slice), (int, slice, slice, cell)) $JettonWallet$_fun_get_wallet_data((int, slice, slice) $self) impure inline_ref;
 
 ;; $SendParameters$_constructor_to_value_mode_body
 ((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_mode_body(slice $to, int $value, int $mode, cell $body) inline;
@@ -245,16 +245,16 @@ _ $StateInit$_get_code((cell, cell) v) inline {
 
 ;;
 ;; Type: WalletData
-;; TLB: _ balance:int257 owner:address master:address walletCode:^cell allowance:int257 = WalletData
+;; TLB: _ balance:int257 owner:address master:address walletCode:^cell = WalletData
 ;;
 
-(int, slice, slice, cell, int) $WalletData$_to_external(((int, slice, slice, cell, int)) v) inline {
-    var (v'balance, v'owner, v'master, v'walletCode, v'allowance) = v; 
-    return (v'balance, v'owner, v'master, v'walletCode, v'allowance);
+(int, slice, slice, cell) $WalletData$_to_external(((int, slice, slice, cell)) v) inline {
+    var (v'balance, v'owner, v'master, v'walletCode) = v; 
+    return (v'balance, v'owner, v'master, v'walletCode);
 }
 
-((int, slice, slice, cell, int)) $WalletData$_constructor_balance_owner_master_walletCode_allowance(int $balance, slice $owner, slice $master, cell $walletCode, int $allowance) inline {
-    return ($balance, $owner, $master, $walletCode, $allowance);
+((int, slice, slice, cell)) $WalletData$_constructor_balance_owner_master_walletCode(int $balance, slice $owner, slice $master, cell $walletCode) inline {
+    return ($balance, $owner, $master, $walletCode);
 }
 
 ;;
@@ -361,9 +361,9 @@ builder $JettonWallet$init$_store(builder build_0, (slice, slice) v) inline {
     return ($self'balance, $self'owner, $self'master);
 }
 
-((int, slice, slice), (int, slice, slice, cell, int)) $JettonWallet$_fun_get_wallet_data((int, slice, slice) $self) impure inline_ref {
+((int, slice, slice), (int, slice, slice, cell)) $JettonWallet$_fun_get_wallet_data((int, slice, slice) $self) impure inline_ref {
     var (($self'balance, $self'owner, $self'master)) = $self;
-    var $fresh$ret_5 = $WalletData$_constructor_balance_owner_master_walletCode_allowance($self'balance, $self'owner, $self'master, $StateInit$_get_code($JettonWallet$_init_child($self'master, $self'owner)), 0);
+    var $fresh$ret_5 = $WalletData$_constructor_balance_owner_master_walletCode($self'balance, $self'owner, $self'master, $StateInit$_get_code($JettonWallet$_init_child($self'master, $self'owner)));
     return (($self'balance, $self'owner, $self'master), $fresh$ret_5);
 }
 

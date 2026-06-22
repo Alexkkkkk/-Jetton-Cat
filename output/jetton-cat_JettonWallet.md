@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: JettonWallet
-BoC Size: 498 bytes
+BoC Size: 496 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 31
@@ -78,8 +78,8 @@ TL-B: `_ history_hash:int257 evolution_cycles:int257 threat_level:int257 policy_
 Signature: `NeuralState{history_hash:int257,evolution_cycles:int257,threat_level:int257,policy_weight:int257,last_tx_time:int257,mutation_seed:int257,memory_bank:int257}`
 
 ### WalletData
-TL-B: `_ balance:int257 owner:address master:address walletCode:^cell allowance:int257 = WalletData`
-Signature: `WalletData{balance:int257,owner:address,master:address,walletCode:^cell,allowance:int257}`
+TL-B: `_ balance:int257 owner:address master:address walletCode:^cell = WalletData`
+Signature: `WalletData{balance:int257,owner:address,master:address,walletCode:^cell}`
 
 ### TokenTransfer
 TL-B: `token_transfer#f8c7a650 query_id:uint64 amount:coins destination:address response_destination:address custom_payload:Maybe ^cell forward_ton_amount:coins forward_payload:remainder<slice> = TokenTransfer`

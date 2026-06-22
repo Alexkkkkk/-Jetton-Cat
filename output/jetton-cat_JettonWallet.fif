@@ -18,7 +18,7 @@ PROGRAM{
   DECLPROC $global_contractAddress
   DECLPROC $Slice$_fun_asCell
   DECLPROC $JettonWallet$_init_child
-  DECLPROC $WalletData$_constructor_balance_owner_master_walletCode_allowance
+  DECLPROC $WalletData$_constructor_balance_owner_master_walletCode
   DECLPROC $JettonWallet$_fun_get_wallet_data
   DECLPROC $SendParameters$_constructor_to_value_mode_body
   DECLPROC $TokenTransferInternal$_constructor_query_id_amount_from_response_destination_forward_ton_amount_forward_payload
@@ -163,18 +163,15 @@ PROGRAM{
     $JettonWallet$init$_store INLINECALLDICT
     ENDC
   }>
-  $WalletData$_constructor_balance_owner_master_walletCode_allowance PROCINLINE:<{
+  $WalletData$_constructor_balance_owner_master_walletCode PROCINLINE:<{
   }>
   $JettonWallet$_fun_get_wallet_data PROCREF:<{
     s0 s1 PUSH2
     $JettonWallet$_init_child INLINECALLDICT
     $StateInit$_get_code INLINECALLDICT
-    0 PUSHINT
-    s4 PUSH
-    s4 s2 s(-1) PUXC2
-    s4 PUSH
-    -ROT
-    $WalletData$_constructor_balance_owner_master_walletCode_allowance INLINECALLDICT
+    s3 s2 s(-2) PU2XC
+    s3 s(-1) PUXC
+    $WalletData$_constructor_balance_owner_master_walletCode INLINECALLDICT
   }>
   $SendParameters$_constructor_to_value_mode_body PROCINLINE:<{
     2SWAP
@@ -188,7 +185,7 @@ PROGRAM{
   %get_wallet_data PROC:<{
     $JettonWallet$_contract_load INLINECALLDICT
     $JettonWallet$_fun_get_wallet_data INLINECALLDICT
-    3 5 BLKDROP2
+    3 4 BLKDROP2
     $WalletData$_to_external INLINECALLDICT
   }>
   recv_internal PROC:<{

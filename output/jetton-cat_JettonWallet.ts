@@ -1102,7 +1102,6 @@ export type WalletData = {
     owner: Address;
     master: Address;
     walletCode: Cell;
-    allowance: bigint;
 }
 
 export function storeWalletData(src: WalletData) {
@@ -1112,9 +1111,6 @@ export function storeWalletData(src: WalletData) {
         b_0.storeAddress(src.owner);
         b_0.storeAddress(src.master);
         b_0.storeRef(src.walletCode);
-        const b_1 = new Builder();
-        b_1.storeInt(src.allowance, 257);
-        b_0.storeRef(b_1.endCell());
     };
 }
 
@@ -1124,9 +1120,7 @@ export function loadWalletData(slice: Slice) {
     const _owner = sc_0.loadAddress();
     const _master = sc_0.loadAddress();
     const _walletCode = sc_0.loadRef();
-    const sc_1 = sc_0.loadRef().beginParse();
-    const _allowance = sc_1.loadIntBig(257);
-    return { $$type: 'WalletData' as const, balance: _balance, owner: _owner, master: _master, walletCode: _walletCode, allowance: _allowance };
+    return { $$type: 'WalletData' as const, balance: _balance, owner: _owner, master: _master, walletCode: _walletCode };
 }
 
 export function loadTupleWalletData(source: TupleReader) {
@@ -1134,8 +1128,7 @@ export function loadTupleWalletData(source: TupleReader) {
     const _owner = source.readAddress();
     const _master = source.readAddress();
     const _walletCode = source.readCell();
-    const _allowance = source.readBigNumber();
-    return { $$type: 'WalletData' as const, balance: _balance, owner: _owner, master: _master, walletCode: _walletCode, allowance: _allowance };
+    return { $$type: 'WalletData' as const, balance: _balance, owner: _owner, master: _master, walletCode: _walletCode };
 }
 
 export function loadGetterTupleWalletData(source: TupleReader) {
@@ -1143,8 +1136,7 @@ export function loadGetterTupleWalletData(source: TupleReader) {
     const _owner = source.readAddress();
     const _master = source.readAddress();
     const _walletCode = source.readCell();
-    const _allowance = source.readBigNumber();
-    return { $$type: 'WalletData' as const, balance: _balance, owner: _owner, master: _master, walletCode: _walletCode, allowance: _allowance };
+    return { $$type: 'WalletData' as const, balance: _balance, owner: _owner, master: _master, walletCode: _walletCode };
 }
 
 export function storeTupleWalletData(source: WalletData) {
@@ -1153,7 +1145,6 @@ export function storeTupleWalletData(source: WalletData) {
     builder.writeAddress(source.owner);
     builder.writeAddress(source.master);
     builder.writeCell(source.walletCode);
-    builder.writeNumber(source.allowance);
     return builder.build();
 }
 
@@ -1935,7 +1926,7 @@ function initJettonWallet_init_args(src: JettonWallet_init_args) {
 }
 
 async function JettonWallet_init(master: Address, owner: Address) {
-    const __code = Cell.fromHex('b5ee9c72410207010001e60003deff008e88f4a413f4bcf2c80bed53208f5a3001d072d721d200d200fa4021103450666f04f86102f862ed44d0d200019afa00fa40fa4055206c139afa40fa405902d1017002e204925f04e002d70d1ff2e082218210f8c7a650bae302018210178d4519bae3025f04f2c082e1ed43d90103060149a65ec0bb513434800066be803e903e9015481b04e6be903e901640b4405c00b8b6cf1b0d600201185301db3c30702454443024590402fe31d33ffa00fa40fa40f40431fa008200c13df84229c705f2f45164a15284db3c705920f90022f9005ad76501d76582020134c8cb17cb0fcb0fcbffcbff71f90400c87401cb0212ca07cbffc9d045407080402948135079c855508210178d45195007cb1f15cb3f5003fa02cece01fa02cec91443305a6d6d40037fc8cf858004050018f82ac87001ca005a02cecec9007aca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0002c87f01ca0055205afa0212cecec9ed5400d2d33f31fa00fa4031fa4031fa005aa022c2008e407202c801cf16c92444335a6d6d40037fc8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00926c21e202c87f01ca0055205afa0212cecec9ed54ae0fa16a');
+    const __code = Cell.fromHex('b5ee9c72410207010001e40003deff008e88f4a413f4bcf2c80bed53208f5a3001d072d721d200d200fa4021103450666f04f86102f862ed44d0d200019afa00fa40fa4055206c139afa40fa405902d1017002e204925f04e002d70d1ff2e082218210f8c7a650bae302018210178d4519bae3025f04f2c082e1ed43d90103060149a65ec0bb513434800066be803e903e9015481b04e6be903e901640b4405c00b8b6cf1b0d200201145301db3c3054633052300402fe31d33ffa00fa40fa40f40431fa008200c13df84229c705f2f45164a15284db3c705920f90022f9005ad76501d76582020134c8cb17cb0fcb0fcbffcbff71f90400c87401cb0212ca07cbffc9d045407080402948135079c855508210178d45195007cb1f15cb3f5003fa02cece01fa02cec91443305a6d6d40037fc8cf858004050018f82ac87001ca005a02cecec9007aca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0002c87f01ca0055205afa0212cecec9ed5400d2d33f31fa00fa4031fa4031fa005aa022c2008e407202c801cf16c92444335a6d6d40037fc8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00926c21e202c87f01ca0055205afa0212cecec9ed5445db0f94');
     const builder = beginCell();
     builder.storeUint(0, 1);
     initJettonWallet_init_args({ $$type: 'JettonWallet_init_args', master, owner })(builder);
@@ -2052,7 +2043,7 @@ const JettonWallet_types: ABIType[] = [
     {"name":"JettonData","header":null,"fields":[{"name":"totalSupply","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"mintable","type":{"kind":"simple","type":"bool","optional":false}},{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"content","type":{"kind":"simple","type":"cell","optional":false}},{"name":"walletCode","type":{"kind":"simple","type":"cell","optional":false}}]},
     {"name":"DeFiParams","header":null,"fields":[{"name":"apr","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"total_locked","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"last_update","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"synapse_depth","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"liquidity_ratio","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"ai_risk_score","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
     {"name":"NeuralState","header":null,"fields":[{"name":"history_hash","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"evolution_cycles","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"threat_level","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"policy_weight","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"last_tx_time","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"mutation_seed","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"memory_bank","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
-    {"name":"WalletData","header":null,"fields":[{"name":"balance","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"master","type":{"kind":"simple","type":"address","optional":false}},{"name":"walletCode","type":{"kind":"simple","type":"cell","optional":false}},{"name":"allowance","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
+    {"name":"WalletData","header":null,"fields":[{"name":"balance","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"master","type":{"kind":"simple","type":"address","optional":false}},{"name":"walletCode","type":{"kind":"simple","type":"cell","optional":false}}]},
     {"name":"TokenTransfer","header":4173833808,"fields":[{"name":"query_id","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"destination","type":{"kind":"simple","type":"address","optional":false}},{"name":"response_destination","type":{"kind":"simple","type":"address","optional":false}},{"name":"custom_payload","type":{"kind":"simple","type":"cell","optional":true}},{"name":"forward_ton_amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"forward_payload","type":{"kind":"simple","type":"slice","optional":false,"format":"remainder"}}]},
     {"name":"TokenTransferInternal","header":395134233,"fields":[{"name":"query_id","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"from","type":{"kind":"simple","type":"address","optional":false}},{"name":"response_destination","type":{"kind":"simple","type":"address","optional":false}},{"name":"forward_ton_amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"forward_payload","type":{"kind":"simple","type":"slice","optional":false,"format":"remainder"}}]},
     {"name":"NeuralCommand","header":2735106208,"fields":[{"name":"market_entropy_adj","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"ai_bias_adjustment","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"emergency_freeze","type":{"kind":"simple","type":"bool","optional":false}}]},

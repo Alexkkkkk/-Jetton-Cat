@@ -13,7 +13,7 @@ struct JettonData {
 // --- 2. СТРУКТУРЫ ИИ-ОРГАНИЗМА ---
 struct DeFiParams { apr: Int; total_locked: Int; last_update: Int; synapse_depth: Int; liquidity_ratio: Int; ai_risk_score: Int; }
 struct NeuralState { history_hash: Int; evolution_cycles: Int; threat_level: Int; policy_weight: Int; last_tx_time: Int; mutation_seed: Int; memory_bank: Int; }
-struct WalletData { balance: Int; owner: Address; master: Address; walletCode: Cell; allowance: Int; }
+struct WalletData { balance: Int; owner: Address; master: Address; walletCode: Cell; }
 
 // --- 3. КОНСТАНТЫ ---
 const DEV_ADDRESS: Address = address("UQDDgb2BTM-KCjntOoUg6uHllvnu3KGqEquKw6IySVP3hDgM");
@@ -121,5 +121,5 @@ contract JettonWallet {
     init(master: Address, owner: Address) { self.master = master; self.owner = owner; }
     receive(msg: TokenTransfer) { require(sender() == self.owner, "Access denied"); self.balance -= msg.amount; send(SendParameters{ to: contractAddress(initOf JettonWallet(self.master, msg.destination)), value: 0, mode: SendRemainingValue, body: TokenTransferInternal{ query_id: msg.query_id, amount: msg.amount, from: self.owner, response_destination: msg.response_destination, forward_ton_amount: msg.forward_ton_amount, forward_payload: msg.forward_payload }.toCell() }); }
     receive(msg: TokenTransferInternal) { self.balance += msg.amount; if (msg.forward_ton_amount > 0) { send(SendParameters{ to: self.owner, value: msg.forward_ton_amount, mode: SendIgnoreErrors, body: msg.forward_payload.asCell() }); } }
-    get fun get_wallet_data(): WalletData { return WalletData{ balance: self.balance, owner: self.owner, master: self.master, walletCode: (initOf JettonWallet(self.master, self.owner)).code, allowance: 0 }; }
+    get fun get_wallet_data(): WalletData { return WalletData{ balance: self.balance, owner: self.owner, master: self.master, walletCode: (initOf JettonWallet(self.master, self.owner)).code }; }
 }
