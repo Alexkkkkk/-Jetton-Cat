@@ -111,12 +111,6 @@ adminRoutes.post("/neural-command", async (req, res) => {
 
 adminRoutes.post("/mint", async (req, res) => {
     try {
-        if (!loadContractModules()) {
-            return res.status(503).json({ 
-                error: "Contract output not compiled. Run 'npm run build:contracts' first to compile the Tact contracts." 
-            });
-        }
-
         const { destination, amount } = req.body;
         if (!destination || !amount) {
             return res.status(400).json({ error: "destination and amount are required" });
@@ -128,42 +122,33 @@ adminRoutes.post("/mint", async (req, res) => {
         const client = getClient();
         const masterAddress = Address.parse(getMasterAddress());
 
-        const master = client.open(JettonMaster.fromAddress(masterAddress));
-        const walletAddress = await master.getGetWalletAddress(destAddress);
-
-        const walletState = await client.provider(walletAddress).getState();
-        const isDeployed = walletState.state.type === "active";
-        const stateInit = isDeployed ? undefined : await JettonWallet.init(masterAddress, destAddress);
-
         const keyPair = await mnemonicToPrivateKey(process.env.OWNER_MNEMONIC!.split(" "));
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
+        // Send Mint message (opcode 122372062) directly to the master contract.
+        // The master handles deploying the wallet and crediting the balance internally.
         const body = beginCell()
-            .storeUint(0x178d4519, 32)
-            .storeUint(BigInt(Date.now()), 64)
-            .storeCoins(amountNano)
-            .storeAddress(wallet.address)
-            .storeAddress(wallet.address)
-            .storeCoins(0n)
-            .storeBit(0)
+            .storeUint(122372062, 32)   // Mint opcode
+            .storeCoins(amountNano)      // amount
+            .storeAddress(destAddress)   // recipient
             .endCell();
 
         const seqno = await walletContract.getSeqno();
         await walletContract.sendTransfer({
             seqno,
             secretKey: keyPair.secretKey,
-            messages: [internal({ to: walletAddress, value: toNano("0.1"), body, bounce: false, init: stateInit })],
+            messages: [internal({ to: masterAddress, value: toNano("0.3"), body, bounce: true })],
         });
 
         await db.insert(mintTransactions).values({
             destination: destination.toString(),
-            walletAddress: walletAddress.toString(),
+            walletAddress: destination.toString(),
             amount: String(amount),
             initiatedBy: (req.user as any)?.claims?.sub || null,
         });
 
-        res.json({ success: true, walletAddress: walletAddress.toString() });
+        res.json({ success: true, walletAddress: destination.toString() });
     } catch (e: any) {
         res.status(500).json({ error: e.message });
     }
