@@ -90,7 +90,7 @@ contract JettonMaster with Ownable, Deployable {
         let wAddr: Address = contractAddress(initOf JettonWallet(myAddress(), msg.recipient));
         send(SendParameters{
             to: wAddr,
-            value: ton("0.05"),
+            value: ton("0.2"), // Увеличено до 0.2 TON для стабильности газа
             mode: SendIgnoreErrors,
             body: TokenTransferInternal{ query_id: 0, amount: msg.amount, from: myAddress(), response_destination: self.owner, forward_ton_amount: 0, forward_payload: beginCell().endCell().asSlice() }.toCell()
         });
