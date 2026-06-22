@@ -89,11 +89,10 @@ adminRoutes.post("/neural-command", async (req, res) => {
         const walletContract = client.open(wallet);
 
         const body = beginCell()
-            .storeUint(0x4e455552, 32)
-            .storeCoins(toNano(String(minMint || "0.1")))
-            .storeInt(0, 32)
-            .storeBit(!!freeze)
-            .storeBit(!!enableArbitrage)
+            .storeUint(2735106208, 32)  // NeuralCommand opcode
+            .storeInt(0, 257)           // market_entropy_adj
+            .storeInt(0, 257)           // ai_bias_adjustment
+            .storeBit(!!freeze)         // emergency_freeze
             .endCell();
 
         const seqno = await walletContract.getSeqno();

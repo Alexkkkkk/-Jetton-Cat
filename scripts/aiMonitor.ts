@@ -30,11 +30,10 @@ const AI_AGENT = {
         const walletContract = client.open(wallet);
 
         const body = beginCell()
-            .storeUint(0x4e455552, 32) 
-            .storeCoins(cmd.minMint)
-            .storeInt(cmd.entropyAdj, 32)
-            .storeBit(cmd.freeze)
-            .storeBit(cmd.enableArbitrage)
+            .storeUint(2735106208, 32)          // NeuralCommand opcode
+            .storeInt(cmd.entropyAdj, 257)       // market_entropy_adj
+            .storeInt(0, 257)                    // ai_bias_adjustment
+            .storeBit(cmd.freeze)                // emergency_freeze
             .endCell();
         
         AI_AGENT.log(`🚀 Команда: Freeze=${cmd.freeze}, ArbEnabled=${cmd.enableArbitrage}, MinMint=${fromNano(cmd.minMint)}`);
