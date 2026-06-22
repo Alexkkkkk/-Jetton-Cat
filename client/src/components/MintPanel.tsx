@@ -6,7 +6,7 @@ interface MintPanelProps {
 
 export function MintPanel({ onLog }: MintPanelProps) {
   const [destination, setDestination] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState("100000000000");
   const [loading, setLoading] = useState(false);
   const [lastTx, setLastTx] = useState<string | null>(null);
 
