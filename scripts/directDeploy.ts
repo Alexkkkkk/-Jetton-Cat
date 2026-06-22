@@ -9,9 +9,33 @@ async function sleep(ms: number) {
     return new Promise(r => setTimeout(r, ms));
 }
 
+// Безопасное сохранение конфигурации
+function saveConfig(contractAddr: Address, ownerAddr: Address) {
+    let existing = {};
+    if (fs.existsSync("./contract_config.json")) {
+        try {
+            existing = JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
+        } catch (e) {
+            console.warn("⚠️ Не удалось прочитать старый конфиг, создаю новый.");
+        }
+    }
+    
+    const updated = {
+        ...existing,
+        masterAddress: contractAddr.toString(),
+        ownerAddress: ownerAddr.toString(),
+        network: "mainnet",
+        deployed: true,
+        last_updated: new Date().toISOString(),
+    };
+    
+    fs.writeFileSync("./contract_config.json", JSON.stringify(updated, null, 4));
+    console.log("✅ contract_config.json обновлен и сохранен.");
+}
+
 async function main() {
-    if (!process.env.OWNER_MNEMONIC) throw new Error("OWNER_MNEMONIC not set");
-    if (!process.env.TONCENTER_API_KEY) throw new Error("TONCENTER_API_KEY not set");
+    if (!process.env.OWNER_MNEMONIC) throw new Error("OWNER_MNEMONIC не установлен в .env");
+    if (!process.env.TONCENTER_API_KEY) throw new Error("TONCENTER_API_KEY не установлен в .env");
 
     const client = new TonClient({
         endpoint: "https://toncenter.com/api/v2/jsonRPC",
@@ -25,29 +49,29 @@ async function main() {
 
     const metadataUrl = "https://raw.githubusercontent.com/Alexkkkkk/-Jetton-Cat/main/metadata.json";
 
-    console.log("Owner wallet :", ownerAddr.toString());
+    console.log("👤 Owner wallet :", ownerAddr.toString());
 
     const state = await client.provider(ownerAddr).getState();
     const balance = Number(state.balance) / 1e9;
-    console.log("Balance      :", balance.toFixed(2), "TON");
+    console.log("💰 Balance      :", balance.toFixed(2), "TON");
 
     if (state.balance < toNano("1.0")) {
-        throw new Error(`Insufficient balance! Need >= 1.0 TON, have ${balance.toFixed(2)}`);
+        throw new Error(`🛑 Недостаточно средств! Нужно минимум 1.0 TON, есть ${balance.toFixed(2)}`);
     }
 
     const jettonMaster = client.open(await JettonMaster.fromInit(ownerAddr, metadataUrl));
     const contractAddr = jettonMaster.address;
-    console.log("Contract addr:", contractAddr.toString());
+    console.log("🤖 AI-Organism addr:", contractAddr.toString());
 
     const contractState = await client.provider(contractAddr).getState();
     if (contractState.state.type === "active") {
-        console.log("✅ Contract already deployed and active!");
-        console.log("TONSCAN:", `https://tonscan.org/address/${contractAddr.toString()}`);
+        console.log("✅ Контракт уже развернут и активен!");
+        console.log("🔗 TONSCAN:", `https://tonscan.org/address/${contractAddr.toString()}`);
         saveConfig(contractAddr, ownerAddr);
         return;
     }
 
-    console.log("Deploying...");
+    console.log("🚀 Запуск деплоя...");
     const deployBody = beginCell()
         .storeUint(2490013878, 32)
         .storeUint(BigInt(Date.now()), 64)
@@ -70,7 +94,7 @@ async function main() {
         ],
     });
 
-    console.log("Transaction sent! Polling for activation...");
+    console.log("⏳ Транзакция отправлена! Ожидание активации контракта...");
     for (let i = 1; i <= 20; i++) {
         await sleep(6000);
         try {
@@ -82,29 +106,15 @@ async function main() {
                 saveConfig(contractAddr, ownerAddr);
                 return;
             }
-            process.stdout.write(`\r⏳ Attempt ${i}/20...`);
+            process.stdout.write(`\r⏳ Попытка ${i}/20...`);
         } catch (e: any) {
-            process.stdout.write(`\r⏳ Attempt ${i}/20 (${e.message.slice(0, 40)})...`);
+            process.stdout.write(`\r⏳ Попытка ${i}/20 (ожидание сети)...`);
         }
     }
 
-    console.log("\n⚠️  Broadcast sent — check tonscan:");
+    console.log("\n⚠️ Транзакция broadcast отправлена — проверяйте TONSCAN:");
     console.log(`https://tonscan.org/address/${contractAddr.toString()}`);
     saveConfig(contractAddr, ownerAddr);
 }
 
-function saveConfig(contractAddr: Address, ownerAddr: Address) {
-    const existing = JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
-    const updated = {
-        ...existing,
-        masterAddress: contractAddr.toString(),
-        ownerAddress: ownerAddr.toString(),
-        network: "mainnet",
-        deployed: true,
-        last_updated: new Date().toISOString(),
-    };
-    fs.writeFileSync("./contract_config.json", JSON.stringify(updated, null, 4));
-    console.log("contract_config.json updated ✓");
-}
-
-main().catch(e => { console.error("Error:", e.message); process.exit(1); });
+main().catch(e => { console.error("\n❌ Ошибка:", e.message); process.exit(1); });
