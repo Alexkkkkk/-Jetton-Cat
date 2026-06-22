@@ -1,0 +1,1 @@
+- [evolve() integer overflow fix](evolve-overflow-fix.md) — mutation_seed * CONTRACT_HASH_SEED overflows 257-bit TVM int; fix: use (seed * (HASH % 1000000)) % 1000000

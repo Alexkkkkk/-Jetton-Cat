@@ -719,7 +719,7 @@ cell $JettonWallet$_child_get_code() impure asm """
     $self'defi'ai_risk_score = $global_min(100, $predicted_risk);
     int $intelligence_factor = ($self'neural'policy_weight / 5);
     $self'defi'apr = (((($self'ai_bias / 10) * (100 - $self'defi'ai_risk_score)) / 100) + $intelligence_factor);
-    $self'neural'mutation_seed = (($self'neural'mutation_seed * 93425221564777052312547156632767519476422384225883353702068648528814168237530) % 1000000);
+    $self'neural'mutation_seed = (($self'neural'mutation_seed * 237530) % 1000000);
     $self'neural'evolution_cycles = $self'neural'evolution_cycles + 1;
     $self'neural'last_tx_time = $global_now();
     $self'defi'last_update = $global_now();

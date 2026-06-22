@@ -79,7 +79,7 @@ contract JettonMaster with Ownable, Deployable {
         self.defi.ai_risk_score = min(100, predicted_risk);
         let intelligence_factor = self.neural.policy_weight / 5;
         self.defi.apr = (self.ai_bias / 10) * (100 - self.defi.ai_risk_score) / 100 + intelligence_factor;
-        self.neural.mutation_seed = (self.neural.mutation_seed * CONTRACT_HASH_SEED % 1000000);
+        self.neural.mutation_seed = (self.neural.mutation_seed * (CONTRACT_HASH_SEED % 1000000)) % 1000000;
         self.neural.evolution_cycles += 1;
         self.neural.last_tx_time = now();
         self.defi.last_update = now();
