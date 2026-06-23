@@ -55,8 +55,8 @@ async function main() {
     const balance = Number(state.balance) / 1e9;
     console.log("💰 Balance      :", balance.toFixed(2), "TON");
 
-    if (state.balance < toNano("1.0")) {
-        throw new Error(`🛑 Недостаточно средств! Нужно минимум 1.0 TON, есть ${balance.toFixed(2)}`);
+    if (state.balance < toNano("0.5")) {
+        throw new Error(`🛑 Недостаточно средств! Нужно минимум 0.5 TON, есть ${balance.toFixed(4)}`);
     }
 
     const jettonMaster = client.open(await JettonMaster.fromInit(ownerAddr, metadataUrl));
@@ -86,7 +86,7 @@ async function main() {
         messages: [
             internal({
                 to: contractAddr,
-                value: toNano("1.0"),
+                value: toNano("0.2"),
                 init: init ?? undefined,
                 body: deployBody,
                 bounce: false,
