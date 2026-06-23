@@ -18,7 +18,14 @@ const AI_AGENT = {
                 text: `🧠 *Neural-Governance Pulse*: ${msg}`,
                 parse_mode: 'Markdown'
             });
-        } catch (e) { AI_AGENT.log(`Telegram error: ${e}`); }
+        } catch (e: any) {
+            const desc = e?.response?.data?.description || e?.message || String(e);
+            if (desc.includes('BOT_TO_BOT') || desc.includes('bot chat')) {
+                AI_AGENT.log(`⚠️ Telegram: TG_CHAT_ID must be your personal user ID (not a bot ID). Get it from @userinfobot on Telegram.`);
+            } else {
+                AI_AGENT.log(`Telegram error: ${desc}`);
+            }
+        }
     },
 
     sendNeuralCommand: async (
@@ -32,6 +39,14 @@ const AI_AGENT = {
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
+        // Guard: skip if wallet balance is too low to cover command + gas
+        const MIN_BALANCE = toNano("0.15");
+        const walletState = await client.provider(wallet.address).getState();
+        if (walletState.balance < MIN_BALANCE) {
+            AI_AGENT.log(`⚠️ Wallet balance too low (${fromNano(walletState.balance)} TON < 0.15 TON). Skipping command to avoid failed tx.`);
+            return;
+        }
+
         // NeuralCommand opcode from compiled Tact output (jetton-cat_JettonMaster.ts)
         // Fields: market_entropy_adj (Int as 257), ai_bias_adjustment (Int as 257), emergency_freeze (Bool)
         const body = beginCell()
@@ -41,7 +56,7 @@ const AI_AGENT = {
             .storeBit(cmd.freeze)
             .endCell();
 
-        AI_AGENT.log(`🚀 NeuralCommand: freeze=${cmd.freeze}, entropyAdj=${cmd.entropyAdj}`);
+        AI_AGENT.log(`🚀 NeuralCommand: freeze=${cmd.freeze}, entropyAdj=${cmd.entropyAdj} (wallet: ${fromNano(walletState.balance)} TON)`);
 
         const seqno = await walletContract.getSeqno();
         await walletContract.sendTransfer({
