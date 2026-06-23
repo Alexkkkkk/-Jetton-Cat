@@ -165,84 +165,84 @@ async function handleUpdate(update: any) {
 
     if (cmd === "/status") {
         try {
-            await sendMessage(chatId, "⏳ Fetching vital signs...");
+            await sendMessage(chatId, "⏳ Получаю показатели жизни...");
             const { vitals, balance, masterAddr } = await fetchVitals();
             const healthEmoji = vitals.health >= 700 ? "🟢" : vitals.health >= 400 ? "🟡" : vitals.health >= 100 ? "🟠" : "🔴";
             const locked = (vitals.total_locked / 1e9).toFixed(3);
             await sendMessage(chatId, [
-                `${healthEmoji} *Vital Signs*`,
+                `${healthEmoji} *Показатели жизни*`,
                 "",
-                `*Health Score:* ${vitals.health}/1000`,
+                `*Здоровье:* ${vitals.health}/1000`,
                 `*APR:* ${vitals.apr}%`,
-                `*Locked:* ${locked} TON`,
-                `*Balance:* ${parseFloat(balance).toFixed(3)} TON`,
-                `*Synapse Depth:* ${vitals.synapse_depth}`,
-                `*Liquidity Ratio:* ${vitals.liquidity_ratio}`,
+                `*Залог:* ${locked} TON`,
+                `*Баланс кошелька:* ${parseFloat(balance).toFixed(3)} TON`,
+                `*Глубина синапсов:* ${vitals.synapse_depth}`,
+                `*Коэф. ликвидности:* ${vitals.liquidity_ratio}`,
             ].join("\n"));
-            await logAiEvent("TG_STATUS_CHECK", "Status checked via Telegram", { chatId, health: vitals.health });
+            await logAiEvent("TG_STATUS_CHECK", "Статус проверен через Telegram", { chatId, health: vitals.health });
         } catch (e: any) {
-            await sendMessage(chatId, `❌ Error: ${e.message}`);
+            await sendMessage(chatId, `❌ Ошибка: ${e.message}`);
         }
         return;
     }
 
     if (cmd === "/neural") {
         try {
-            await sendMessage(chatId, "⏳ Reading neural profile...");
+            await sendMessage(chatId, "⏳ Читаю нейронный профиль...");
             const neural = await fetchNeural();
             const secAgo = Math.floor(Date.now() / 1000) - neural.last_tx_time;
             const minAgo = Math.floor(secAgo / 60);
             await sendMessage(chatId, [
-                "🧠 *Neural Brain Profile*",
+                "🧠 *Профиль нейронного мозга*",
                 "",
-                `*Evolution Cycles:* ${neural.evolution_cycles}`,
-                `*Threat Level:* ${neural.threat_level}/100`,
-                `*Policy Weight:* ${neural.policy_weight}`,
-                `*Memory Bank:* ${neural.memory_bank}/100`,
-                `*Mutation Seed:* ${neural.mutation_seed}`,
-                `*Last Tx:* ${minAgo < 1 ? "< 1m ago" : `${minAgo}m ago`}`,
-                `*History Hash:* \`${neural.history_hash}...\``,
+                `*Циклы эволюции:* ${neural.evolution_cycles}`,
+                `*Уровень угрозы:* ${neural.threat_level}/100`,
+                `*Вес политики:* ${neural.policy_weight}`,
+                `*Банк памяти:* ${neural.memory_bank}/100`,
+                `*Мутационный сид:* ${neural.mutation_seed}`,
+                `*Последняя тх:* ${minAgo < 1 ? "< 1 мин назад" : `${minAgo} мин назад`}`,
+                `*Хэш истории:* \`${neural.history_hash}...\``,
             ].join("\n"));
         } catch (e: any) {
-            await sendMessage(chatId, `❌ Error: ${e.message}`);
+            await sendMessage(chatId, `❌ Ошибка: ${e.message}`);
         }
         return;
     }
 
     if (cmd === "/ai") {
         try {
-            await sendMessage(chatId, "🧠 Running AI analysis...");
+            await sendMessage(chatId, "🧠 Запускаю ИИ анализ...");
             const { vitals } = await fetchVitals();
             const neural = await fetchNeural();
             const analysis = analyzeContract(vitals as any, neural, false);
             await sendMessage(chatId, formatTelegramAnalysis(analysis));
-            await logAiEvent("TG_AI_ANALYSIS", "AI analysis via Telegram", { chatId, status: analysis.status });
+            await logAiEvent("TG_AI_ANALYSIS", "ИИ анализ через Telegram", { chatId, status: analysis.status });
         } catch (e: any) {
-            await sendMessage(chatId, `❌ AI analysis error: ${e.message}`);
+            await sendMessage(chatId, `❌ Ошибка ИИ анализа: ${e.message}`);
         }
         return;
     }
 
     if (cmd === "/freeze") {
         try {
-            await sendMessage(chatId, "🔴 Sending emergency freeze command...");
+            await sendMessage(chatId, "🔴 Отправляю команду экстренной заморозки...");
             await sendNeuralCommand(true, -50);
-            await sendMessage(chatId, "✅ *Emergency freeze sent!* Contract entering hibernation mode.");
-            await logAiEvent("TG_FREEZE", "Emergency freeze via Telegram", { chatId });
+            await sendMessage(chatId, "✅ *Заморозка отправлена!* Контракт входит в режим гибернации.");
+            await logAiEvent("TG_FREEZE", "Экстренная заморозка через Telegram", { chatId });
         } catch (e: any) {
-            await sendMessage(chatId, `❌ Freeze failed: ${e.message}`);
+            await sendMessage(chatId, `❌ Ошибка заморозки: ${e.message}`);
         }
         return;
     }
 
     if (cmd === "/unfreeze") {
         try {
-            await sendMessage(chatId, "🟢 Sending unfreeze command...");
+            await sendMessage(chatId, "🟢 Отправляю команду разморозки...");
             await sendNeuralCommand(false, 0);
-            await sendMessage(chatId, "✅ *Unfreeze command sent!* Contract resuming operations.");
-            await logAiEvent("TG_UNFREEZE", "Unfreeze via Telegram", { chatId });
+            await sendMessage(chatId, "✅ *Команда разморозки отправлена!* Контракт возобновляет операции.");
+            await logAiEvent("TG_UNFREEZE", "Разморозка через Telegram", { chatId });
         } catch (e: any) {
-            await sendMessage(chatId, `❌ Unfreeze failed: ${e.message}`);
+            await sendMessage(chatId, `❌ Ошибка разморозки: ${e.message}`);
         }
         return;
     }
@@ -251,30 +251,30 @@ async function handleUpdate(update: any) {
         const parts = text.split(" ");
         const val = parseInt(parts[1] || "0", 10);
         if (isNaN(val) || val < -500 || val > 500) {
-            await sendMessage(chatId, "❌ Value must be between -500 and 500. Example: /entropy -50");
+            await sendMessage(chatId, "❌ Значение должно быть от -500 до 500. Пример: /entropy -50");
             return;
         }
         try {
-            await sendMessage(chatId, `⚙️ Adjusting entropy by ${val}...`);
+            await sendMessage(chatId, `⚙️ Регулирую энтропию на ${val}...`);
             await sendNeuralCommand(false, val);
-            await sendMessage(chatId, `✅ Entropy adjusted by *${val}*`);
-            await logAiEvent("TG_ENTROPY_ADJ", "Entropy adjusted via Telegram", { chatId, value: val });
+            await sendMessage(chatId, `✅ Энтропия изменена на *${val}*`);
+            await logAiEvent("TG_ENTROPY_ADJ", "Энтропия изменена через Telegram", { chatId, value: val });
         } catch (e: any) {
-            await sendMessage(chatId, `❌ Error: ${e.message}`);
+            await sendMessage(chatId, `❌ Ошибка: ${e.message}`);
         }
         return;
     }
 
     if (cmd === "/contract") {
         const config = getConfig();
-        const addr = config.masterAddress || process.env.MASTER_ADDRESS || "Not configured";
+        const addr = config.masterAddress || process.env.MASTER_ADDRESS || "Не настроен";
         await sendMessage(chatId, [
-            "📋 *Contract Info*",
+            "📋 *Информация о контракте*",
             "",
-            `*Address:*\n\`${addr}\``,
+            `*Адрес:*\n\`${addr}\``,
             "",
-            `*Network:* ${config.network || "mainnet"}`,
-            `*Deployed:* ${config.deployed ? "✅ Yes" : "⏳ No"}`,
+            `*Сеть:* ${config.network || "mainnet"}`,
+            `*Задеплоен:* ${config.deployed ? "✅ Да" : "⏳ Нет"}`,
             `*TONScan:* https://tonscan.org/address/${addr}`,
         ].join("\n"));
         return;

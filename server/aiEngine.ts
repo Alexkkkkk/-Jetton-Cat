@@ -96,11 +96,24 @@ export function analyzeContract(
     }
 
     if (vitals.health === 0 && vitals.total_locked === 0) {
-        insights.push("🆕 Contract is freshly deployed — awaiting first stake");
-        recommendations.push("Stake at least 0.5 TON to activate the AI neural engine");
+        insights.push("🆕 Контракт только развёрнут — ожидает первого стейка");
+        recommendations.push("Застейкайте минимум 0.5 TON для активации нейронного ИИ-движка");
         return {
             status: "STABLE", statusEmoji: "🆕",
-            score: 0, summary: "Contract initialized — neural engine dormant, awaiting activation.",
+            score: 0, summary: "Контракт инициализирован — нейронный движок в режиме ожидания.",
+            insights, recommendations,
+            riskLevel: "LOW", predictedApr: vitals.apr, trend: "STABLE",
+            autonomyIndex: 0, timestamp: Date.now()
+        };
+    }
+
+    if (vitals.health === 0 && vitals.total_locked > 0) {
+        insights.push("⚙️ Контракт активирован — нейронные циклы ещё не начались");
+        insights.push(`💎 Резервный фонд: ${(vitals.total_locked / 1e9).toFixed(3)} TON — стейк принят`);
+        recommendations.push("Дождитесь первого цикла evolve() или отправьте NeuralCommand для инициализации");
+        return {
+            status: "STABLE", statusEmoji: "⚙️",
+            score: 0, summary: "Контракт со стейком, нейронный ИИ инициализируется. Ожидание первого цикла эволюции.",
             insights, recommendations,
             riskLevel: "LOW", predictedApr: vitals.apr, trend: "STABLE",
             autonomyIndex: 0, timestamp: Date.now()

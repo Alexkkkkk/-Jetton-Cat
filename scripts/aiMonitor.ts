@@ -45,10 +45,10 @@ const AI_AGENT = {
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
-        const MIN_BALANCE = toNano("0.15");
+        const MIN_BALANCE = toNano("0.08");
         const walletState = await client.provider(wallet.address).getState();
         if (walletState.balance < MIN_BALANCE) {
-            AI_AGENT.log(`⚠️ Wallet balance too low (${fromNano(walletState.balance)} TON < 0.15 TON). Skipping.`);
+            AI_AGENT.log(`⚠️ Wallet balance too low (${fromNano(walletState.balance)} TON < 0.08 TON). Skipping.`);
             return;
         }
 
