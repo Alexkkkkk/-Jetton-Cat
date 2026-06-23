@@ -5,5 +5,7 @@
   "symbol": "PLSH",
   "decimals": "9",
   "websites": ["https://catplushie.bothost.tech"],
-  "social_links": ["https://t.me/CatPlushie_bot"]
+  "social_links": ["https://t.me/CatPlushie_bot"],
+  "marketplace": "https://dedust.io",
+  "tags": ["defi", "ai"]
 }

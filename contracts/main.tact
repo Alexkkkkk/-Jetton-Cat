@@ -61,7 +61,7 @@ contract JettonMaster with Ownable, Deployable {
     get fun get_jetton_data(): JettonData {
         return JettonData{
             totalSupply: self.total_supply,
-            mintable: false,
+            mintable: true,
             owner: self.owner,
             content: self.jetton_content,
             walletCode: (initOf JettonWallet(myAddress(), self.owner)).code

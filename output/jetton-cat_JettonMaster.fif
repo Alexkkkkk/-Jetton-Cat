@@ -476,7 +476,7 @@ PROGRAM{
     ENDC
   }>
   $JettonMaster$_fun_get_jetton_data PROCREF:<{
-    FALSE
+    TRUE
         MYADDR
     23 s() PUSH
     $JettonWallet$_init_child INLINECALLDICT
