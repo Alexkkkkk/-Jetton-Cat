@@ -32,7 +32,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node_modules/.bin/ts-node --transpile-only server/index.ts"
+args = "cd client && npm run build && cd .. && node_modules/.bin/ts-node --transpile-only server/index.ts"
 waitForPort = 5000
 
 [[workflows.workflow]]
