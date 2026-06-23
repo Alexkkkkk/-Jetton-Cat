@@ -6,6 +6,7 @@ import { adminRoutes } from "./adminRoutes";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
 import { initTelegramBot } from "./telegramBot";
+import { getTelegramMiniAppHTML } from "./telegramMiniApp";
 
 const app = express();
 app.use(express.json());
@@ -56,6 +57,12 @@ async function main() {
     registerAuthRoutes(app);
 
     app.use("/api/admin", isAuthenticated, adminRoutes);
+
+    app.get("/tg-app", (_req, res) => {
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.setHeader("Cache-Control", "no-cache");
+        res.send(getTelegramMiniAppHTML());
+    });
 
     app.get("/metadata.json", (_req, res) => {
         res.setHeader("Access-Control-Allow-Origin", "*");

@@ -283,13 +283,24 @@ async function poll() {
             }
         }
     } catch (e: any) {
-        if (!e.message?.includes("ECONNRESET") && !e.message?.includes("timeout")) {
+        const status = e.response?.status;
+        if (status === 409) {
+            console.log("[TG-BOT] Polling conflict (409) — another instance running. Retrying in 10s...");
+            if (isPolling) pollingTimer = setTimeout(poll, 10000);
+            return;
+        }
+        if (status === 429) {
+            const retryAfter = (e.response?.data?.parameters?.retry_after || 5) * 1000;
+            if (isPolling) pollingTimer = setTimeout(poll, retryAfter);
+            return;
+        }
+        if (!e.message?.includes("ECONNRESET") && !e.message?.includes("timeout") && !e.message?.includes("aborted")) {
             console.error("[TG-BOT] Poll error:", e.message);
         }
     }
 
     if (isPolling) {
-        pollingTimer = setTimeout(poll, 1000);
+        pollingTimer = setTimeout(poll, 500);
     }
 }
 

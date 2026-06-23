@@ -14,8 +14,19 @@ export default function App() {
   }, []);
 
   if (loading) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--bg)" }}>
-      <div style={{ color: "var(--accent)", fontSize: 18 }}>⚙️ Loading...</div>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--bg)", gap: 16 }}>
+      <div style={{ fontSize: 40, animation: "float 2s ease-in-out infinite" }}>🐱</div>
+      <div style={{ color: "var(--accent)", fontSize: 15, fontFamily: "'Rajdhani', sans-serif", letterSpacing: 3, textTransform: "uppercase" }}>
+        Инициализация нейросети...
+      </div>
+      <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+        {[0,1,2].map(i => (
+          <div key={i} style={{
+            width: 8, height: 8, borderRadius: "50%", background: "var(--accent)",
+            animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+          }} />
+        ))}
+      </div>
     </div>
   );
 
