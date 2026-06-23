@@ -3,7 +3,7 @@ Contract: JettonWallet
 BoC Size: 496 bytes
 
 ## Structures (Structs and Messages)
-Total structures: 31
+Total structures: 32
 
 ### DataSize
 TL-B: `_ cells:int257 bits:int257 refs:int257 = DataSize`
@@ -121,6 +121,10 @@ Signature: `AddPeer{peer_address:address}`
 TL-B: `remove_peer#c6a80fbf peer_address:address = RemovePeer`
 Signature: `RemovePeer{peer_address:address}`
 
+### AdminWithdraw
+TL-B: `admin_withdraw#88672e38 amount:coins = AdminWithdraw`
+Signature: `AdminWithdraw{amount:coins}`
+
 ### JettonMaster$Data
 TL-B: `_ owner:address jetton_content:^cell total_supply:coins total_staked:coins reserve_fund:coins peers:dict<address, bool> defi:DeFiParams{apr:int257,total_locked:int257,last_update:int257,synapse_depth:int257,liquidity_ratio:int257,ai_risk_score:int257} market_entropy:int257 ai_bias:int257 neural:NeuralState{history_hash:int257,evolution_cycles:int257,threat_level:int257,policy_weight:int257,last_tx_time:int257,mutation_seed:int257,memory_bank:int257} is_frozen:bool = JettonMaster`
 Signature: `JettonMaster{owner:address,jetton_content:^cell,total_supply:coins,total_staked:coins,reserve_fund:coins,peers:dict<address, bool>,defi:DeFiParams{apr:int257,total_locked:int257,last_update:int257,synapse_depth:int257,liquidity_ratio:int257,ai_risk_score:int257},market_entropy:int257,ai_bias:int257,neural:NeuralState{history_hash:int257,evolution_cycles:int257,threat_level:int257,policy_weight:int257,last_tx_time:int257,mutation_seed:int257,memory_bank:int257},is_frozen:bool}`
@@ -178,6 +182,7 @@ No arguments
 * 51754: Insufficient funds
 * 53619: AI Intuition: Liquidity locked for safety
 * 58965: Security Alert: Untrusted Agent
+* 61135: Amount must be positive
 
 ## Trait inheritance diagram
 

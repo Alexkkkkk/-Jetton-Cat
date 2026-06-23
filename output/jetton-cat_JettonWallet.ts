@@ -1740,6 +1740,53 @@ export function dictValueParserRemovePeer(): DictionaryValue<RemovePeer> {
     }
 }
 
+export type AdminWithdraw = {
+    $$type: 'AdminWithdraw';
+    amount: bigint;
+}
+
+export function storeAdminWithdraw(src: AdminWithdraw) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(2288463416, 32);
+        b_0.storeCoins(src.amount);
+    };
+}
+
+export function loadAdminWithdraw(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 2288463416) { throw Error('Invalid prefix'); }
+    const _amount = sc_0.loadCoins();
+    return { $$type: 'AdminWithdraw' as const, amount: _amount };
+}
+
+export function loadTupleAdminWithdraw(source: TupleReader) {
+    const _amount = source.readBigNumber();
+    return { $$type: 'AdminWithdraw' as const, amount: _amount };
+}
+
+export function loadGetterTupleAdminWithdraw(source: TupleReader) {
+    const _amount = source.readBigNumber();
+    return { $$type: 'AdminWithdraw' as const, amount: _amount };
+}
+
+export function storeTupleAdminWithdraw(source: AdminWithdraw) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.amount);
+    return builder.build();
+}
+
+export function dictValueParserAdminWithdraw(): DictionaryValue<AdminWithdraw> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeAdminWithdraw(src)).endCell());
+        },
+        parse: (src) => {
+            return loadAdminWithdraw(src.loadRef().beginParse());
+        }
+    }
+}
+
 export type JettonMaster$Data = {
     $$type: 'JettonMaster$Data';
     owner: Address;
@@ -1977,6 +2024,7 @@ export const JettonWallet_errors = {
     51754: { message: "Insufficient funds" },
     53619: { message: "AI Intuition: Liquidity locked for safety" },
     58965: { message: "Security Alert: Untrusted Agent" },
+    61135: { message: "Amount must be positive" },
 } as const
 
 export const JettonWallet_errors_backward = {
@@ -2022,6 +2070,7 @@ export const JettonWallet_errors_backward = {
     "Insufficient funds": 51754,
     "AI Intuition: Liquidity locked for safety": 53619,
     "Security Alert: Untrusted Agent": 58965,
+    "Amount must be positive": 61135,
 } as const
 
 const JettonWallet_types: ABIType[] = [
@@ -2054,6 +2103,7 @@ const JettonWallet_types: ABIType[] = [
     {"name":"PeerKnowledgeExchange","header":1234992150,"fields":[{"name":"sender_master","type":{"kind":"simple","type":"address","optional":false}},{"name":"apr_data","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"ai_risk_score","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"policy_weight","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
     {"name":"AddPeer","header":43789747,"fields":[{"name":"peer_address","type":{"kind":"simple","type":"address","optional":false}}]},
     {"name":"RemovePeer","header":3332902847,"fields":[{"name":"peer_address","type":{"kind":"simple","type":"address","optional":false}}]},
+    {"name":"AdminWithdraw","header":2288463416,"fields":[{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
     {"name":"JettonMaster$Data","header":null,"fields":[{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"jetton_content","type":{"kind":"simple","type":"cell","optional":false}},{"name":"total_supply","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"total_staked","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"reserve_fund","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"peers","type":{"kind":"dict","key":"address","value":"bool"}},{"name":"defi","type":{"kind":"simple","type":"DeFiParams","optional":false}},{"name":"market_entropy","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"ai_bias","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"neural","type":{"kind":"simple","type":"NeuralState","optional":false}},{"name":"is_frozen","type":{"kind":"simple","type":"bool","optional":false}}]},
     {"name":"JettonWallet$Data","header":null,"fields":[{"name":"balance","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"master","type":{"kind":"simple","type":"address","optional":false}}]},
 ]
@@ -2074,6 +2124,7 @@ const JettonWallet_opcodes = {
     "PeerKnowledgeExchange": 1234992150,
     "AddPeer": 43789747,
     "RemovePeer": 3332902847,
+    "AdminWithdraw": 2288463416,
 }
 
 const JettonWallet_getters: ABIGetter[] = [

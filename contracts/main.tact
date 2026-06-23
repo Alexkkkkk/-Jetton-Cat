@@ -33,6 +33,7 @@ message Mint { amount: Int as coins; recipient: Address; }
 message PeerKnowledgeExchange { sender_master: Address; apr_data: Int; ai_risk_score: Int; policy_weight: Int; }
 message AddPeer { peer_address: Address; }
 message RemovePeer { peer_address: Address; }
+message AdminWithdraw { amount: Int as coins; }
 
 // --- 5. ГЛАВНЫЙ КОНТРАКТ: АВТОНОМНЫЙ ИИ-ОРГАНИЗМ ---
 contract JettonMaster with Ownable, Deployable {
@@ -106,7 +107,8 @@ contract JettonMaster with Ownable, Deployable {
     receive(msg: CognitiveFeedback) { self.requireOwner(); self.neural.policy_weight = max(10, min(1000, self.neural.policy_weight + msg.strategy_shift)); self.ai_bias = max(100, min(5000, self.ai_bias + msg.confidence_level)); self.evolve(); }
     receive(msg: NeuralCommand) { self.requireOwner(); self.market_entropy = max(0, min(1000, self.market_entropy + msg.market_entropy_adj)); self.is_frozen = msg.emergency_freeze; self.evolve(); }
     receive(msg: Stake) { require(!self.is_frozen, "AI Brain: Hibernation Mode"); let ctx: Context = context(); require(ctx.value >= ton("0.5"), "Min 0.5 TON"); self.total_staked += msg.amount; self.defi.total_locked += ctx.value; self.reserve_fund += ctx.value * (100 - (self.ai_bias / 50)) / 100; self.evolve(); }
-    receive(msg: Unstake) { require(self.defi.ai_risk_score < 60, "AI Intuition: Liquidity locked for safety"); require(self.total_staked >= msg.amount, "Insufficient funds"); self.total_staked -= msg.amount; self.defi.total_locked -= msg.amount; self.evolve(); send(SendParameters{ to: sender(), value: 0, mode: SendRemainingValue, bounce: false }); }
+    receive(msg: Unstake) { require(self.defi.ai_risk_score < 60, "AI Intuition: Liquidity locked for safety"); require(self.total_staked >= msg.amount, "Insufficient funds"); self.total_staked -= msg.amount; self.defi.total_locked -= msg.amount; self.evolve(); send(SendParameters{ to: sender(), value: msg.amount, mode: SendIgnoreErrors, bounce: false }); }
+    receive(msg: AdminWithdraw) { self.requireOwner(); require(msg.amount > 0, "Amount must be positive"); send(SendParameters{ to: self.owner, value: msg.amount, mode: SendIgnoreErrors, bounce: false }); }
 
     get fun get_vital_signs(): DeFiParams { return self.defi; }
     get fun get_neural_profile(): NeuralState { return self.neural; }

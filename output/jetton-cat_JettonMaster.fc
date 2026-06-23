@@ -896,7 +896,17 @@ _ %owner() method_id(83229) {
         $self'total_staked = $self'total_staked - $msg'amount;
         $self'defi'total_locked = $self'defi'total_locked - $msg'amount;
         ($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)~$JettonMaster$_fun_evolve();
-        $global_send($SendParameters$_constructor_to_value_mode_bounce(__tact_context_get_sender(), 0, 64, false));
+        $global_send($SendParameters$_constructor_to_value_mode_bounce(__tact_context_get_sender(), $msg'amount, 2, false));
+        $JettonMaster$_contract_store(($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen));
+        return ();
+    }
+    
+    ;; Receive AdminWithdraw message
+    if (op == 2288463416) {
+        var $msg'amount = in_msg~load_varuint16();
+        ($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen)~$JettonMaster$_fun_requireOwner();
+        throw_unless(61135, ($msg'amount > 0));
+        $global_send($SendParameters$_constructor_to_value_mode_bounce($self'owner, $msg'amount, 2, false));
         $JettonMaster$_contract_store(($self'owner, $self'jetton_content, $self'total_supply, $self'total_staked, $self'reserve_fund, $self'peers, ($self'defi'apr, $self'defi'total_locked, $self'defi'last_update, $self'defi'synapse_depth, $self'defi'liquidity_ratio, $self'defi'ai_risk_score), $self'market_entropy, $self'ai_bias, ($self'neural'history_hash, $self'neural'evolution_cycles, $self'neural'threat_level, $self'neural'policy_weight, $self'neural'last_tx_time, $self'neural'mutation_seed, $self'neural'memory_bank), $self'is_frozen));
         return ();
     }
