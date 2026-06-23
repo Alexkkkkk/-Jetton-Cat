@@ -1,2 +1,3 @@
 - [evolve() integer overflow fix](evolve-overflow-fix.md) — mutation_seed * CONTRACT_HASH_SEED overflows 257-bit TVM int; fix: use (seed * (HASH % 1000000)) % 1000000
 - [Telegram bot polling](tg-polling.md) — use axios long-polling directly (node-telegram-bot-api causes ERR_PACKAGE_PATH_NOT_EXPORTED); handle 409 with 10s backoff, 429 with retry_after delay
+- [Mint no-stateInit bug](mint-no-stateinit-bug.md) — deployed Mint bounces for fresh recipients (inflates supply, delivers nothing); deliver via owner→wallet msg with stateInit + TokenTransferInternal
