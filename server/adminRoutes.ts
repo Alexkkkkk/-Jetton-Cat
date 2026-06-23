@@ -311,9 +311,9 @@ adminRoutes.post("/unstake", async (req, res) => {
 adminRoutes.post("/telegram-test", async (_req, res) => {
     try {
         const token = process.env.TG_BOT_TOKEN;
-        const chatId = process.env.TG_CHAT_ID;
+        const chatId = process.env.TG_CHAT_ID || getConfig().tgChatId;
         if (!token || !chatId) {
-            return res.status(400).json({ error: "TG_BOT_TOKEN and TG_CHAT_ID must be set in Secrets" });
+            return res.status(400).json({ error: "TG_CHAT_ID не настроен. Напишите /start боту в Telegram." });
         }
         await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
             chat_id: chatId,

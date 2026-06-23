@@ -100,6 +100,20 @@ async function sendNeuralCommand(freeze: boolean, entropyAdj: number) {
     });
 }
 
+function saveChatId(chatId: number | string): void {
+    try {
+        const cfgPath = "./contract_config.json";
+        const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf-8"));
+        if (String(cfg.tgChatId) !== String(chatId)) {
+            cfg.tgChatId = String(chatId);
+            fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 4));
+            console.log(`[TG-BOT] Auto-saved chatId=${chatId} to contract_config.json`);
+        }
+    } catch (e: any) {
+        console.error("[TG-BOT] Failed to save chatId:", e.message);
+    }
+}
+
 async function handleUpdate(update: any) {
     const msg = update.message;
     if (!msg?.text) return;
@@ -111,39 +125,40 @@ async function handleUpdate(update: any) {
     console.log(`[TG-BOT] Command: ${cmd} from chatId ${chatId}`);
 
     if (cmd === "/start") {
+        saveChatId(chatId);
         await sendMessage(chatId, [
-            "🐱 *NeuroJetton AI Bot — PLSH Neural Governance*",
+            "🐱 *NeuroJetton AI — Нейронное Управление PLSH*",
             "",
-            "Welcome to the autonomous AI organism command interface.",
+            "Добро пожаловать в интерфейс управления автономным ИИ-организмом.",
             "",
-            "Commands:",
-            "/status — Contract vital signs",
-            "/neural — Neural brain profile",
-            "/ai — Full AI analysis & recommendations",
-            "/freeze — Emergency freeze",
-            "/unfreeze — Restore operations",
-            "/contract — Contract address & info",
-            "/help — Show all commands",
+            "Команды:",
+            "/status — Показатели жизни контракта",
+            "/neural — Профиль нейронного мозга",
+            "/ai — Полный ИИ анализ и рекомендации",
+            "/freeze — Экстренная заморозка",
+            "/unfreeze — Возобновить операции",
+            "/contract — Адрес контракта и инфо",
+            "/help — Все команды",
         ].join("\n"));
         return;
     }
 
     if (cmd === "/help") {
         await sendMessage(chatId, [
-            "📋 *Available Commands*",
+            "📋 *Все команды*",
             "",
-            "🔍 *Monitoring*",
-            "/status — Vital signs (health, APR, locked)",
-            "/neural — Neural profile (cycles, threat, memory)",
-            "/ai — AI analysis with insights & recommendations",
-            "/contract — Contract address & info",
+            "🔍 *Мониторинг*",
+            "/status — Показатели жизни (здоровье, APR, залог)",
+            "/neural — Нейронный профиль (циклы, угроза, память)",
+            "/ai — ИИ анализ с инсайтами и рекомендациями",
+            "/contract — Адрес контракта и инфо",
             "",
-            "⚙️ *Control*",
-            "/freeze — Emergency freeze contract",
-            "/unfreeze — Unfreeze contract",
-            "/entropy [±N] — Adjust market entropy (e.g. /entropy -50)",
+            "⚙️ *Управление*",
+            "/freeze — Экстренная заморозка контракта",
+            "/unfreeze — Разморозить контракт",
+            "/entropy [±N] — Энтропия рынка (пример: /entropy -50)",
             "",
-            "/help — This message",
+            "/help — Это сообщение",
         ].join("\n"));
         return;
     }
@@ -316,7 +331,7 @@ export function initTelegramBot(): void {
 }
 
 export async function sendTelegramAlert(message: string): Promise<void> {
-    const chatId = process.env.TG_CHAT_ID;
+    const chatId = process.env.TG_CHAT_ID || getConfig().tgChatId;
     if (!process.env.TG_BOT_TOKEN || !chatId) return;
     await sendMessage(chatId, message);
 }

@@ -14,20 +14,20 @@ const AI_AGENT = {
     notifyTelegram: async (msg: string) => {
         try {
             const token = process.env.TG_BOT_TOKEN;
-            const chatId = process.env.TG_CHAT_ID;
-            if (!token || !chatId) return;
+            const freshConfig = JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
+            const chatId = freshConfig.tgChatId || process.env.TG_CHAT_ID;
+            if (!token || !chatId) {
+                AI_AGENT.log("⚠️ Telegram: TG_CHAT_ID не настроен. Напишите /start боту в Telegram.");
+                return;
+            }
             await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
                 chat_id: chatId,
-                text: `🧠 *Neural-Governance Pulse*: ${msg}`,
+                text: `🧠 *Нейронный Импульс*: ${msg}`,
                 parse_mode: "Markdown",
             });
         } catch (e: any) {
             const desc = e?.response?.data?.description || e?.message || String(e);
-            if (desc.includes("BOT_TO_BOT") || desc.includes("bot chat")) {
-                AI_AGENT.log("⚠️ Telegram: TG_CHAT_ID must be your personal user ID. Get it from @userinfobot on Telegram.");
-            } else {
-                AI_AGENT.log(`Telegram error: ${desc}`);
-            }
+            AI_AGENT.log(`Telegram error: ${desc}`);
         }
     },
 
