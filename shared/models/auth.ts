@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, jsonb, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import { index, jsonb, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const sessions = pgTable(
   "sessions",
@@ -35,3 +35,14 @@ export const mintTransactions = pgTable("mint_transactions", {
 
 export type MintTransaction = typeof mintTransactions.$inferSelect;
 export type InsertMintTransaction = typeof mintTransactions.$inferInsert;
+
+export const aiEvents = pgTable("ai_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventType: varchar("event_type", { length: 64 }).notNull(),
+  description: text("description").notNull(),
+  data: text("data").default("{}"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type AiEvent = typeof aiEvents.$inferSelect;
+export type InsertAiEvent = typeof aiEvents.$inferInsert;

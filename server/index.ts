@@ -5,6 +5,7 @@ import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integra
 import { adminRoutes } from "./adminRoutes";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
+import { initTelegramBot } from "./telegramBot";
 
 const app = express();
 app.use(express.json());
@@ -35,6 +36,13 @@ async function ensureTables() {
                 initiated_by VARCHAR,
                 created_at TIMESTAMP DEFAULT NOW()
             );
+            CREATE TABLE IF NOT EXISTS ai_events (
+                id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+                event_type VARCHAR(64) NOT NULL,
+                description TEXT NOT NULL,
+                data TEXT DEFAULT '{}',
+                created_at TIMESTAMP DEFAULT NOW()
+            );
         `);
         console.log("[DB] Tables ready.");
     } catch (e) {
@@ -49,7 +57,6 @@ async function main() {
 
     app.use("/api/admin", isAuthenticated, adminRoutes);
 
-    // Public metadata endpoint — readable by TON wallets and explorers (no auth, CORS open)
     app.get("/metadata.json", (_req, res) => {
         res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader("Cache-Control", "public, max-age=3600");
@@ -66,6 +73,8 @@ async function main() {
     app.listen(PORT, "0.0.0.0", () => {
         console.log(`[ADMIN] Server running on port ${PORT}`);
     });
+
+    initTelegramBot();
 }
 
 main().catch(console.error);

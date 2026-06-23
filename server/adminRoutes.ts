@@ -6,9 +6,18 @@ import { mintTransactions } from "../shared/models/auth";
 import { desc } from "drizzle-orm";
 import axios from "axios";
 import * as fs from "fs";
+import { analyzeContract, logAiEvent, getRecentAiEvents } from "./aiEngine";
+
+function getConfig() {
+    try {
+        return JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
+    } catch {
+        return {};
+    }
+}
 
 function getMasterAddress(): string {
-    const config = JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
+    const config = getConfig();
     return config.masterAddress || process.env.MASTER_ADDRESS!;
 }
 
@@ -38,13 +47,13 @@ adminRoutes.get("/stats", async (_req, res) => {
                 last_update:    r.stack.readNumber(),
                 synapse_depth:  r.stack.readNumber(),
                 liquidity_ratio: r.stack.readNumber(),
-                health:         r.stack.readNumber(), // ai_risk_score
+                health:         r.stack.readNumber(),
             };
         } catch (_) {
             contractStats = { error: "Contract not yet active (exit_code 11)" };
         }
 
-        const configData = JSON.parse(fs.readFileSync("./contract_config.json", "utf-8"));
+        const configData = getConfig();
 
         res.json({
             masterAddress: getMasterAddress(),
@@ -59,6 +68,90 @@ adminRoutes.get("/stats", async (_req, res) => {
     }
 });
 
+adminRoutes.get("/neural-profile", async (_req, res) => {
+    try {
+        const client = getClient();
+        const master = Address.parse(getMasterAddress());
+        const r = await client.runMethod(master, "get_neural_profile");
+        const neural = {
+            history_hash: r.stack.readBigNumber().toString(16).slice(0, 16),
+            evolution_cycles: r.stack.readNumber(),
+            threat_level: r.stack.readNumber(),
+            policy_weight: r.stack.readNumber(),
+            last_tx_time: r.stack.readNumber(),
+            mutation_seed: r.stack.readNumber(),
+            memory_bank: r.stack.readNumber(),
+        };
+        res.json(neural);
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+adminRoutes.get("/ai-analysis", async (_req, res) => {
+    try {
+        const client = getClient();
+        const master = Address.parse(getMasterAddress());
+
+        const state = await client.provider(master).getState();
+        const balance = fromNano(state.balance);
+
+        let vitals: any = null;
+        let neural: any = null;
+        let isFrozen = false;
+
+        try {
+            const rv = await client.runMethod(master, "get_vital_signs");
+            vitals = {
+                apr: rv.stack.readNumber(),
+                total_locked: Number(rv.stack.readBigNumber()),
+                last_update: rv.stack.readNumber(),
+                synapse_depth: rv.stack.readNumber(),
+                liquidity_ratio: rv.stack.readNumber(),
+                health: rv.stack.readNumber(),
+            };
+        } catch (_) {
+            vitals = { apr: 0, total_locked: 0, last_update: 0, synapse_depth: 0, liquidity_ratio: 0, health: 0 };
+        }
+
+        try {
+            const rn = await client.runMethod(master, "get_neural_profile");
+            neural = {
+                history_hash: rn.stack.readBigNumber().toString(16).slice(0, 16),
+                evolution_cycles: rn.stack.readNumber(),
+                threat_level: rn.stack.readNumber(),
+                policy_weight: rn.stack.readNumber(),
+                last_tx_time: rn.stack.readNumber(),
+                mutation_seed: rn.stack.readNumber(),
+                memory_bank: rn.stack.readNumber(),
+            };
+        } catch (_) {
+            neural = { history_hash: "0", evolution_cycles: 0, threat_level: 0, policy_weight: 100, last_tx_time: 0, mutation_seed: 7, memory_bank: 0 };
+        }
+
+        const analysis = analyzeContract(vitals, neural, isFrozen);
+
+        await logAiEvent("AI_ANALYSIS_RUN", analysis.summary, {
+            status: analysis.status,
+            score: analysis.score,
+            riskLevel: analysis.riskLevel,
+        });
+
+        res.json({ analysis, vitals, neural, balance });
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+adminRoutes.get("/ai-events", async (_req, res) => {
+    try {
+        const events = await getRecentAiEvents(30);
+        res.json(events);
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 adminRoutes.post("/neural-command", async (req, res) => {
     try {
         const { freeze, entropyAdj = 0, biasAdj = 0 } = req.body;
@@ -68,8 +161,6 @@ adminRoutes.post("/neural-command", async (req, res) => {
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
-        // NeuralCommand opcode from compiled Tact output (jetton-cat_JettonMaster.ts)
-        // Fields: market_entropy_adj (Int as 257), ai_bias_adjustment (Int as 257), emergency_freeze (Bool)
         const body = beginCell()
             .storeUint(2735106208, 32)
             .storeInt(Number(entropyAdj), 257)
@@ -84,10 +175,10 @@ adminRoutes.post("/neural-command", async (req, res) => {
             messages: [internal({ to: master, value: toNano("0.1"), body })],
         });
 
-        res.json({
-            success: true,
-            message: `Neural command sent: freeze=${freeze}, entropyAdj=${entropyAdj}, biasAdj=${biasAdj}`,
-        });
+        const msg = `Neural command sent: freeze=${freeze}, entropyAdj=${entropyAdj}, biasAdj=${biasAdj}`;
+        await logAiEvent(freeze ? "EMERGENCY_FREEZE" : "NEURAL_COMMAND", msg, { freeze, entropyAdj, biasAdj });
+
+        res.json({ success: true, message: msg });
     } catch (e: any) {
         res.status(500).json({ error: e.message });
     }
@@ -110,8 +201,6 @@ adminRoutes.post("/mint", async (req, res) => {
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
-        // Mint opcode from compiled Tact output (jetton-cat_JettonMaster.ts)
-        // Fields: amount (coins), recipient (Address)
         const body = beginCell()
             .storeUint(122372062, 32)
             .storeCoins(amountNano)
@@ -132,6 +221,8 @@ adminRoutes.post("/mint", async (req, res) => {
             initiatedBy: (req.user as any)?.claims?.sub || null,
         });
 
+        await logAiEvent("MINT", `Minted ${amount} PLSH to ${destination}`, { destination, amount });
+
         res.json({ success: true, walletAddress: destination.toString() });
     } catch (e: any) {
         res.status(500).json({ error: e.message });
@@ -145,7 +236,6 @@ adminRoutes.get("/mint-history", async (_req, res) => {
             .from(mintTransactions)
             .orderBy(desc(mintTransactions.createdAt))
             .limit(50);
-
         res.json(rows);
     } catch (e: any) {
         res.status(500).json({ error: e.message });
@@ -165,8 +255,6 @@ adminRoutes.post("/stake", async (req, res) => {
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
-        // Stake opcode from compiled Tact output: 3203459332
-        // Fields: amount (coins)
         const body = beginCell()
             .storeUint(3203459332, 32)
             .storeCoins(amountNano)
@@ -178,6 +266,8 @@ adminRoutes.post("/stake", async (req, res) => {
             secretKey: keyPair.secretKey,
             messages: [internal({ to: master, value: amountNano + toNano("0.1"), body, bounce: true })],
         });
+
+        await logAiEvent("STAKE", `Staked ${amount} TON to contract`, { amount });
 
         res.json({ success: true, message: `Staked ${amount} TON to contract` });
     } catch (e: any) {
@@ -198,8 +288,6 @@ adminRoutes.post("/unstake", async (req, res) => {
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
         const walletContract = client.open(wallet);
 
-        // Unstake opcode from compiled Tact output: 4284693473
-        // Fields: amount (coins)
         const body = beginCell()
             .storeUint(4284693473, 32)
             .storeCoins(amountNano)
@@ -212,6 +300,8 @@ adminRoutes.post("/unstake", async (req, res) => {
             messages: [internal({ to: master, value: toNano("0.1"), body, bounce: true })],
         });
 
+        await logAiEvent("UNSTAKE", `Unstake of ${amount} TON requested`, { amount });
+
         res.json({ success: true, message: `Unstake of ${amount} TON requested` });
     } catch (e: any) {
         res.status(500).json({ error: e.message });
@@ -220,11 +310,17 @@ adminRoutes.post("/unstake", async (req, res) => {
 
 adminRoutes.post("/telegram-test", async (_req, res) => {
     try {
-        await axios.post(`https://api.telegram.org/bot${process.env.TG_BOT_TOKEN}/sendMessage`, {
-            chat_id: process.env.TG_CHAT_ID,
-            text: "🧠 *Admin Panel*: Test message sent from NeuroJetton Admin Dashboard.",
+        const token = process.env.TG_BOT_TOKEN;
+        const chatId = process.env.TG_CHAT_ID;
+        if (!token || !chatId) {
+            return res.status(400).json({ error: "TG_BOT_TOKEN and TG_CHAT_ID must be set in Secrets" });
+        }
+        await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+            chat_id: chatId,
+            text: "🧠 *NeuroJetton Admin*: Test message from the AI Dashboard — all systems operational.",
             parse_mode: "Markdown",
         });
+        await logAiEvent("TG_TEST", "Telegram test message sent from dashboard");
         res.json({ success: true });
     } catch (e: any) {
         res.status(500).json({ error: e.message });
